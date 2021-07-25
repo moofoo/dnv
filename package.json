@@ -6,6 +6,7 @@
     "bin": {
         "dnv": "bin/dnv"
     },
+    "preferGlobal": true,
     "scripts": {
         "preuninstall": "node ./src/preuninstall.js"
     },
@@ -74,9 +75,5 @@
         "xterm": "^4.12.0",
         "xterm-addon-unicode11": "^0.2.0",
         "yamljs": "^0.3.0"
-    },
-    "devDependencies": {
-        "cli-driver": "^0.2.7",
-        "env-paths": "^2.2.1"
     }
 }

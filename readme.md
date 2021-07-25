@@ -336,19 +336,19 @@ If you choose 'yes' for `Restart containers when source files change?`, then DNV
 
 ### Action menu (`Ctrl + a`)
 
-### bash / sh
+#### bash / sh
 
 Opens a bash / sh shell in the container
 
-### exec
+#### exec
 
 Shows a list of installed programs (installed via apt/apk as well as npm globally installed packages). If you run, for example, `apt update` and then `apt install htop` in a bash/sh shell, then `htop` will appear in the exec menu.
 
-### repl
+#### repl
 
 Opens a repl session in your project directory
 
-### scripts
+#### scripts
 
 Shows a list of options comprising
 
@@ -357,7 +357,7 @@ Shows a list of options comprising
 
 Pressing `space` (as opposed to enter) shows a prompt to enter arguments (in the case of .sh scripts) or modify the executed command (for package.json script entries)
 
-### metrics
+#### metrics
 
 Shows a 'metrics' display for the node process. Shows graphs for
 
@@ -366,13 +366,13 @@ Shows a 'metrics' display for the node process. Shows graphs for
 -   Event loop time
 -   Active handles
 
-### readme
+#### readme
 
 Lets you open the README.md for your project's dependencies.
 
 Pressing `Ctrl + e` opens a sections menu for quick navigation.
 
-### restart
+#### restart
 
 Restarts the container
 
