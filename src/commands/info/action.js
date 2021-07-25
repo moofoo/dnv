@@ -59,7 +59,7 @@ const infoAction = async (opts = {}) => {
 
     let choose = false;
 
-    if (!opts.all && !opts.default && !opts.log) {
+    if (!opts.all && !opts.default && !opts.log && !opts.select) {
         if (!isSet) {
             choose = true;
         } else {
@@ -68,7 +68,7 @@ const infoAction = async (opts = {}) => {
         }
     }
 
-    if (choose) {
+    if (choose || opts.select) {
         selectedProject = await project();
         files.cwd = selectedProject.path;
         logProject();

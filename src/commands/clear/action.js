@@ -5,11 +5,15 @@ const { config } = require('../../lib/config');
 const { files } = require('../../lib/files');
 
 const { success, error } = require('../../lib/text');
-const { fstat } = require('fs-promise');
 
 const clearAction = async function (opts = {}) {
     const isSet = config.isProjectConfigSet();
     let pathKey = null;
+
+    if (isSet) {
+        const project = config.getProjectConfig();
+        pathKey = project.pathKey;
+    }
 
     if (opts.dependencies) {
         if (files.fileExists('node_modules')) {
@@ -37,14 +41,7 @@ const clearAction = async function (opts = {}) {
         }
 
         return;
-    }
-
-    if (isSet) {
-        const project = config.getProjectConfig();
-        pathKey = project.pathKey;
-    }
-
-    if (opts.project) {
+    } else if (opts.project) {
         if (!config.isProjectConfigSet()) {
             error('Project not initialized');
             process.exit(0);
@@ -53,21 +50,15 @@ const clearAction = async function (opts = {}) {
         await all(false, pathKey, true, opts.force);
         success('Docker objects and config cleared');
         return;
-    }
-
-    if (opts.all) {
+    } else if (opts.select) {
         await all(false, opts.force ? pathKey : null, true, opts.force);
         success('Docker objects and config cleared');
         return;
-    }
-
-    if (opts.docker) {
+    } else if (opts.docker) {
         await docker(false, opts.force ? pathKey : null, true, opts.force);
         success('Docker objects cleared');
         return;
-    }
-
-    if (opts.reset) {
+    } else if (opts.reset) {
         await reset();
         success("It's...It's all gone. There's nothing left.");
         return;

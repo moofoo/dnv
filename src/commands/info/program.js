@@ -2,11 +2,11 @@ module.exports = async (action) => {
     const { program } = require('commander');
     program
         .command('info')
-        .description('Output project configuration')
-        .option(
-            '-a --all',
-            'Output entire project config object, including internally used values'
+        .description(
+            'Output project configuration\n\nDisplays project configuration associated with current directory when no options passed'
         )
+        .option('-a --all', 'Output contents of config JSON file')
+        .option('-s --select', 'Output configuration for selected project')
         .option('-d --default', 'Output default configuration')
         .option('-p --path', 'Output config file path')
         .action(action);

@@ -11,7 +11,7 @@ module.exports = async (action) => {
                 'Remove Docker objects and configuration for current directory project'
             )
             .option(
-                '-a --all',
+                '-s --select',
                 'Remove Docker objects and configuration for selected projects'
             )
             .option(
@@ -22,13 +22,10 @@ module.exports = async (action) => {
                 '-r --reset',
                 'Remove all DNV created Docker elements and clear configuration'
             )
-            .option(
-                '-f --force',
-                'Used with --project, runs clear without showing options prompts'
-            )
+            .option('-f --force', 'Bypass prompts')
             .option(
                 '--dependencies',
-                'Delete npm / yarn / yarn v2 lock files and module folders in the current directory.'
+                'Delete npm / yarn / yarn v2 lock files and dependency folders in the current directory.'
             )
             .action(action);
 
@@ -36,20 +33,18 @@ module.exports = async (action) => {
     } else {
         console.log(
             String.raw`
-Usage: dnv clear [options]
+    Usage: dnv clear [options]
 
-Remove containers, volumes and config for DNV projects
+    Remove containers, volumes and config for DNV projects
 
-Options:
-  -p --project  Remove Docker objects and configuration for current directory project
-  -a --all      Remove Docker objects and configuration for selected projects
-  -d --docker   Remove containers, volumes and images created by DNV for selected projects
-  -r --reset    Remove all DNV created Docker elements and clear configuration
-  -f --force    bypass prompts
-  -n --name     Remove docker elements by name. This just does simple pattern matching so BE CAREFUL
-  -h, --help    display help for command
-
-`
+    Options:
+    -p --project      Remove Docker objects and configuration for current directory project
+    -s --select       Remove Docker objects and configuration for selected projects
+    -d --docker       Remove containers, volumes and images created by DNV for selected projects
+    -r --reset        Remove all DNV created Docker elements and clear configuration
+    -f --force        bypass prompts
+    --dependencies    Delete npm / yarn / yarn v2 lock files and dependency folders in the current directory.
+    `
         );
     }
 };

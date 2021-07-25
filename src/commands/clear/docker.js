@@ -6,9 +6,8 @@ const { removeContainers } = require('../../lib/docker/containers');
 const { getContainerImages, removeImages } = require('../../lib/docker/images');
 
 const { config } = require('../../lib/config');
-const { removeNetworks } = require('../../lib/docker/networks');
 
-const projects = require('../config/prompts/projects');
+const project = require('../config/prompts/project');
 
 const docker = async (
     other = false,
@@ -20,8 +19,9 @@ const docker = async (
 
     let keys = [pathKey];
 
-    if (!pathKey && configs.length) {
-        keys = (await projects()).map((proj) => proj.pathKey);
+    if (!pathKey && Object.keys(configs).length) {
+        const projects = await project();
+        keys = projects.map((proj) => proj.pathKey);
     }
 
     if (force) {

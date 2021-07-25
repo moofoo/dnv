@@ -1,31 +1,11 @@
 const Conf = require('conf');
+const isOnline = require('is-online');
 const execa = require('execa');
 const { files } = require('./files');
 const isDockerRunning = require('./docker/docker-running');
 const parseArgs = require('minimist');
 
 const argv = parseArgs(process.argv);
-
-const tubin = async () => {
-    let output = { stdout: '', stderr: '' };
-
-    try {
-        output = await execa.command(`npm ping`, { stdio: 'pipe' });
-    } catch (err) {
-        output = err;
-    }
-
-    const combo = output.stdout + output.stderr;
-
-    if (
-        !combo.includes('because the host is inaccessible') &&
-        combo.includes('PONG')
-    ) {
-        return true;
-    }
-
-    return false;
-};
 
 const yarnVersion = async () => {
     let output;
@@ -66,18 +46,13 @@ class Config extends Conf {
     }
 
     async setup() {
-        /*const [isOnline, yarnVer, dockerRunning] = await Promise.all([
-            tubin(),
-            yarnVersion(),
-            isDockerRunning(),
-        ]);*/
-
-        const [yarnVer, dockerRunning] = await Promise.all([
+        const [online, yarnVer, dockerRunning] = await Promise.all([
+            isOnline(),
             yarnVersion(),
             isDockerRunning(),
         ]);
 
-        this.isOnline = true;
+        this.isOnline = online;
         this.yarnVersion = yarnVer;
         this.dockerRunning = dockerRunning;
     }
@@ -319,6 +294,5 @@ const config = new Config();
 module.exports = {
     config,
     Config,
-    Conf,
     yarnVersion,
 };

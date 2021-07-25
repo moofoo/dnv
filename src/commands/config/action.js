@@ -36,7 +36,7 @@ const configAction = async (opts = {}) => {
             selectedProject = config.getProjectConfig(false);
         }
 
-        if (!isSet || opts.all) {
+        if (!isSet || opts.select) {
             selectedProject = await project();
             files.cwd = (selectedProject && selectedProject.path) || files.cwd;
         }

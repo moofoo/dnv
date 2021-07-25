@@ -33,7 +33,6 @@ const main = async () => {
         init -- Initialize project in current directory
         ui -- Start project using DNVs Multiplexing UI
         up -- Start project using 'docker-compose up'
-        shell -- Connect to DNV project services
         stop -- Run docker-compose stop for DNV projects
 
     Example
@@ -41,7 +40,7 @@ const main = async () => {
         $ dnv config (edit configuration of project in current directory)
         $ dnv up -h (show help for 'up' command)
         $ dnv ui (Run DNV UI for project in current directory)
-    `);
+`);
         return;
     }
 

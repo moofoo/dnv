@@ -594,14 +594,7 @@ const populateAndInstall = ({
             WORKDIR, and use node --require to make it work.
 
             However, Node will insist it's not there at first, and will only see the file
-            after the container goes through a full start / shutdown (not kill) / start cycle.
-
-            The resulting file system is like a volume sandwich, which might be the issue:
-
-            - anonymous volume (/, /usr) - (anonymous I think?)
-            - external volume (/usr/src/dnv_metrics.js)
-            - bind mount (/usr/src/app) - project source
-            - same external volume (/usr/src/app/node_modules) - dependencies
+            after the container goes through two or more full start / shutdown (not kill) / start cycles. Weird.
 
             In any case, I ended up sticking it in node_modules in a .dot directory
             (meaning it won't be deleted by NPM, and it's reasonably out of the way)
@@ -759,8 +752,8 @@ const dnvUpDetached = ({
         command += ` -p ${projectName}`;
     }
 
-    if (file.length) {
-        command += ` -f ${file.join(' ')}`;
+    if (Array.isArray(file) && file.length) {
+        command += ' -f ' + file.join(' -f ');
     }
 
     command += ` up --detach ${removeOrphans ? '--remove-orphans' : ''}`;
@@ -837,8 +830,8 @@ const dnvUp = async ({
         command += ` -p ${projectName}`;
     }
 
-    if (file.length) {
-        command += ` -f ${file.join(' ')}`;
+    if (Array.isArray(file) && file.length) {
+        command += ' -f ' + file.join(' -f ');
     }
 
     command += ` up ${removeOrphans ? '--remove-orphans' : ''}`;

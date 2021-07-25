@@ -409,27 +409,6 @@ class UI extends Grid {
             });
         });
 
-        /*
-  this.screen.program.on('mouse', (data) => {
-            //    if (data.action != 'mousemove') {
-            const d = {};
-            for (const k of Object.keys(data)) {
-                if (!['parts', 'buf', 'raw'].includes(k)) {
-                    d[k] = data[k];
-                }
-            }
-            this.debug(d, true);
-            //   }
-        });
-    this.screen.key('p', (ch, key) => {
-            this.debug(this.screen.height + ' ' + this.screen.width);
-        });
-
-        this.screen.on('keypress', (ch, key) => {
-            this.debug(key, true);
-        });
-        */
-
         this.on('prompt open', (hideBar = true) => {
             this.promptOpen = true;
             this.processKeys = false;

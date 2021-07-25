@@ -128,6 +128,7 @@ class Files extends EventEmitter {
     }
 
     getRelativeFile(file, cwd) {
+        cwd = cwd || this.cwd;
         const filename = this.getFileName(file);
         return './' + filename;
     }

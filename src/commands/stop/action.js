@@ -4,7 +4,7 @@ const { files } = require('../../lib/files');
 const { error } = require('../../lib/text');
 const project = require('../config/prompts/project');
 
-const stopAction = async (opts) => {
+const stopAction = async (opts = {}) => {
     const isSet = config.isProjectConfigSet();
 
     const projectConfigs = config.get('projectConfigs');
@@ -14,8 +14,6 @@ const stopAction = async (opts) => {
         return;
     }
 
-    let cwd = opts.cwd || files.cwd;
-
     let selectedProject;
 
     if (!isSet) {
@@ -24,15 +22,24 @@ const stopAction = async (opts) => {
         selectedProject = config.getProjectConfig(true);
     }
 
-    let { name: projectName } = selectedProject;
+    let { name: projectName, externalVolume } = selectedProject || {};
 
-    execa.commandSync(
-        `docker-compose -p ${projectName} -f docker-compose-dnv-gen.yml stop`,
-        {
+    let cwd = (selectedProject && selectedProject.path) || files.cwd;
+
+    if (externalVolume) {
+        execa.commandSync(
+            `docker-compose -p ${projectName} -f docker-compose-dnv-gen.yml stop`,
+            {
+                stdio: 'inherit',
+                cwd,
+            }
+        );
+    } else {
+        execa.commandSync(`docker-compose -p ${projectName} stop`, {
             stdio: 'inherit',
             cwd,
-        }
-    );
+        });
+    }
 };
 
 module.exports = stopAction;

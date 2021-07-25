@@ -305,10 +305,18 @@ const optionProcessing = async (opts) => {
             }
         }
 
-        if (uiServices.includes(name)) {
-            opts.services[name].show = true;
+        if (Array.isArray(opts.service) && opts.service.length) {
+            if (opts.service.includes(name)) {
+                opts.services[name].show = true;
+            } else {
+                opts.services[name].show = false;
+            }
         } else {
-            opts.services[name].show = false;
+            if (uiServices.includes(name)) {
+                opts.services[name].show = true;
+            } else {
+                opts.services[name].show = false;
+            }
         }
     }
 

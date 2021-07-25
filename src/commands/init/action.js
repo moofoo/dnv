@@ -111,6 +111,12 @@ const checkForExisting = async (opts) => {
 
     const composeFile = ComposeFile.exists();
 
+    opts.existingDockerfile = DockerFile.exists();
+
+    if (opts.existingDockerfile) {
+        opts.createdDockerFile = false;
+    }
+
     if (composeFile) {
         const answers = await inquirer.prompt([
             {
@@ -377,13 +383,33 @@ const startupSetOpts = async (opts = {}) => {
 };
 
 const repoPathPrompts = async (opts) => {
+    // Disable this feature for now
+    if (!files.hasPackageJson()) {
+        error('package.json not found');
+        process.exit(0);
+    }
+
     if (opts.existingCompose) {
         opts.multiRepo = false;
         opts.repoPaths = [];
         return opts;
     }
 
-    repoPaths = (await files.getMultiRepoPaths()) || [];
+    const repoPaths = [];
+
+    repoPaths.push({
+        path: files.cwd,
+        shortPath: files.getShortPath(files.cwd),
+        pkgJson: `${files.cwd}/package.json`,
+        dir: files.getDir(files.cwd),
+        formatted: files.getFormattedDir(files.cwd),
+    });
+
+    opts.multiRepo = false;
+    opts.repoPaths = repoPaths;
+    return opts;
+
+    /*  repoPaths = (await files.getMultiRepoPaths()) || [];
 
     let multiRepo = false;
 
@@ -435,6 +461,7 @@ const repoPathPrompts = async (opts) => {
     opts.repoPaths = repoPaths;
 
     return opts;
+    */
 };
 
 const newDockerfilePrompts = async (opts) => {
@@ -583,7 +610,7 @@ const composeFilePrompts = async (opts) => {
     if (externalVolume) {
         const { uiStats } = await inquirer.prompt({
             type: 'checkbox',
-            message: 'Enable metrics display for Node services in DNV UI',
+            message: 'Enable metrics display for Node services in DNV UI?',
             name: 'uiStats',
             choices: cf.nodeServiceNames || [],
         });

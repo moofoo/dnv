@@ -124,7 +124,7 @@ const gridHelp = (screen) => {
     command(middle, 'Submit / Cancel', 'Enter / Escape');
     command(middle, 'Clear prompt', 'Ctrl + x');
     command(middle, 'Cycle prior filters', 'Ctrl + Up / Down');
-    command(middle, 'Persist filter / Clear', 'Ctrl + g');
+    command(middle, 'Clear filter', 'Ctrl + g');
 
     top += 1;
 
@@ -134,7 +134,7 @@ const gridHelp = (screen) => {
 
     top += 1;
 
-    heading(middle, `Panel Actions (like ${helperText('Container', 'a')})`);
+    heading(middle, `Panel Actions (like ${helperText('Action', 'A')})`);
     command(middle, 'Run Action', 'Ctrl + indicated letter');
 
     top += 1;
