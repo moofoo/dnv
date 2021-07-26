@@ -482,6 +482,8 @@ By default, WSL will open to a directory like `/mnt/c/WINDOWS/system32`, which i
     -   `cd ~`
 -   Press `Ctrl + O` and then `Enter` to save, and then `Ctrl + X` to quit.
 
+Also, be sure to take a lookat [NodeJS on WSL](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl).
+
 ## Thanks
 
 I'm indebted to the work done on the Blessed Terminal widget by [RSE - Blessed Xterm](https://github.com/rse/blessed-xterm) and [astefanutti - Kubebox](https://github.com/astefanutti/kubebox).
@@ -492,5 +494,5 @@ The 'metrics' display for the UI is based on code from [FormidableLabs - nodejs-
 
 Additional box borders are from [cancerberoSgx - flor](https://github.com/cancerberoSgx/flor)
 
-Of course, the underlying tech that drives the extensively modified Blessed Terminal widget used by DNV UI is [XTerm](https://github.com/xtermjs/xterm.js), which is amazing, in my opinion. Displaying
-multiple logs with 1000+ line scrollback performantly simply wasn't feasible with Log widget that comes with Blessed.
+Of course, the underlying tech that drives the extensively modified Blessed Terminal widget used by the DNV UI is [XTerm](https://github.com/xtermjs/xterm.js), which is amazing, in my opinion. Displaying
+multiple logs with 1000+ line scrollback performantly simply wasn't feasible with the Log widget that comes with Blessed.
