@@ -340,7 +340,9 @@ If you choose 'yes' for `Restart containers when source files change?`, then DNV
 │  Find last match                              Ctrl + End                  Move Cursor (if visible)   Alt + Left Button	          |
 ```
 
-### Action menu (`Ctrl + a`)
+### Actions menu (`Ctrl + a`)
+
+![terminal-actions](https://user-images.githubusercontent.com/13556/126921354-972748fb-821f-4a1c-9c76-9a8f72202528.png)
 
 #### bash / sh
 
