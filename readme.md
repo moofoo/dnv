@@ -295,13 +295,17 @@ If you choose 'yes' for the `External Volume` option during project initializati
 
 Well, `docker-compose up` won't build images for your Node containers from the Dockerfile(s), since the container file system is just the contents of your project directory plus the dependency directory (node_modules or .yarn), and DNV manages that. Consequently, changing dependencies for your project doesn't require rebuilding an image, so that's quick and painless.
 
+#### How does DNV work if I don't use the external volume option?
+
+DNV monitors lock files for changes and selectively rebuilds container images, if needed, when running `dnv ui` or `dnv up
+
 #### Should I use this?
 
 If you're just starting development and don't have your Node dependencies nailed down yet, absolutely. It will make developing with Docker Compose much more pleasant. Otherwise, you probably won't get much benefit from it.
 
 Note that the 'Metrics display' option is only available with the External Volume option enabled.
 
-Also, you should use `dnv stop` to stop a docker compose project originally started with `dnv ui` / `dnv up`, rather than through the Docker Desktop UI (since it doesn't remember that the project was started with a specific .yml file, it will mess up)
+Also, when using the external volume option you should use `dnv stop` to stop a docker compose project originally started with `dnv ui` / `dnv up`, rather than through the Docker Desktop UI (since it doesn't remember that the project was started with a unique .yml file)
 
 ### Restarting containers option
 
