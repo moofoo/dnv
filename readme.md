@@ -6,51 +6,51 @@ Friction-less Node Development in Docker Compose
 
 <!-- Start Document Outline -->
 
-* [Install](#install)
-* [Description](#description)
-* [Basic Usage](#basic-usage)
-	* [Initialize DNV Project](#initialize-dnv-project)
-	* [Run DNV UI](#run-dnv-ui)
-* [DNV CLI commands](#dnv-cli-commands)
-	* [Clear](#clear)
-	* [Config](#config)
-	* [Info](#info)
-	* [Init](#init)
-	* [UI](#ui)
-	* [Up](#up)
-	* [Stop](#stop)
-* [DNV Init](#dnv-init)
-	* [Behavior with existing Dockerfile / docker-compose.yml files](#behavior-with-existing-dockerfile--docker-composeyml-files)
-	* [Initialization options / prompts](#initialization-options--prompts)
-		* [Package Manager](#package-manager)
-		* [External Volume](#external-volume)
-		* [Working Directory](#working-directory)
-		* [Dockerfile Node Image](#dockerfile-node-image)
-		* [Use Node User](#use-node-user)
-		* [Restart containers option](#restart-containers-option)
-		* [Metrics display option (w/ External Volume option)](#metrics-display-option-w-external-volume-option)
-		* [Use alternate node image when DNV starts service (w/ External Volume option)](#use-alternate-node-image-when-dnv-starts-service-w-external-volume-option)
-	* [External Volume option](#external-volume-option)
-		* [What does this mean?](#what-does-this-mean)
-		* [Should I use this?](#should-i-use-this)
-	* [Restarting containers option](#restarting-containers-option)
-* [DNV UI](#dnv-ui)
-	* [Commands](#commands)
-	* [Action menu (Ctrl + a)](#action-menu-ctrl--a)
-		* [bash / sh](#bash--sh)
-		* [exec](#exec)
-		* [repl](#repl)
-		* [scripts](#scripts)
-		* [metrics](#metrics)
-		* [readme](#readme)
-		* [restart](#restart)
-	* [Notes](#notes)
-* [DNV?!](#dnv)
-* [Running DNV on Windows with WSL](#running-dnv-on-windows-with-wsl)
-	* [Step 1 - Running WSL as Admin](#step-1---running-wsl-as-admin)
-	* [Step 2 - Install gsudo](#step-2---install-gsudo)
-	* [Step 3 - Install Windows Terminal Preview and create a profile to run the WSL as Admin](#step-3---install-windows-terminal-preview-and-create-a-profile-to-run-the-wsl-as-admin)
-	* [Step 4 (optional) - Modify .bashrc to navigate to Linux home directory on startup](#step-4-optional---modify-bashrc-to-navigate-to-linux-home-directory-on-startup)
+-   [Install](#install)
+-   [Description](#description)
+-   [Basic Usage](#basic-usage)
+    -   [Initialize DNV Project](#initialize-dnv-project)
+    -   [Run DNV UI](#run-dnv-ui)
+-   [DNV CLI commands](#dnv-cli-commands)
+    -   [Clear](#clear)
+    -   [Config](#config)
+    -   [Info](#info)
+    -   [Init](#init)
+    -   [UI](#ui)
+    -   [Up](#up)
+    -   [Stop](#stop)
+-   [DNV Init](#dnv-init)
+    -   [Behavior with existing Dockerfile / docker-compose.yml files](#behavior-with-existing-dockerfile--docker-composeyml-files)
+    -   [Initialization options / prompts](#initialization-options--prompts)
+        -   [Package Manager](#package-manager)
+        -   [External Volume](#external-volume)
+        -   [Working Directory](#working-directory)
+        -   [Dockerfile Node Image](#dockerfile-node-image)
+        -   [Use Node User](#use-node-user)
+        -   [Restart containers option](#restart-containers-option)
+        -   [Metrics display option (w/ External Volume option)](#metrics-display-option-w-external-volume-option)
+        -   [Use alternate node image when DNV starts service (w/ External Volume option)](#use-alternate-node-image-when-dnv-starts-service-w-external-volume-option)
+    -   [External Volume option](#external-volume-option)
+        -   [What does this mean?](#what-does-this-mean)
+        -   [Should I use this?](#should-i-use-this)
+    -   [Restarting containers option](#restarting-containers-option)
+-   [DNV UI](#dnv-ui)
+    -   [Commands](#commands)
+    -   [Action menu (Ctrl + a)](#action-menu-ctrl--a)
+        -   [bash / sh](#bash--sh)
+        -   [exec](#exec)
+        -   [repl](#repl)
+        -   [scripts](#scripts)
+        -   [metrics](#metrics)
+        -   [readme](#readme)
+        -   [restart](#restart)
+    -   [Notes](#notes)
+-   [DNV?!](#dnv)
+-   [Running DNV on Windows with WSL](#running-dnv-on-windows-with-wsl)
+    -   [Step 1 - Running WSL as Admin](#step-1---running-wsl-as-admin)
+    -   [Step 2 - Install gsudo](#step-2---install-gsudo)
+    -   [Step 3 - Install Windows Terminal Preview and create a profile to run the WSL as Admin](#step-3---install-windows-terminal-preview-and-create-a-profile-to-run-the-wsl-as-admin)
+    -   [Step 4 (optional) - Modify .bashrc to navigate to Linux home directory on startup](#step-4-optional---modify-bashrc-to-navigate-to-linux-home-directory-on-startup)
 
 <!-- End Document Outline -->
 
@@ -214,9 +214,9 @@ Run docker-compose stop for current directory project
 
 ### Behavior with existing Dockerfile / docker-compose.yml files
 
--   If \***\*both\*\*** a Dockerfile and docker-compose.yml are present, DNV will refer to those files when initializing the project.
--   If \***\*neither\*\*** file is present, DNV will generate a basic Dockerfile and docker-compose.yml
--   If \***\*only one\*\*** of either Dockerfile or docker-compose.yml is present, initialization will error out
+-   If **both** a Dockerfile and docker-compose.yml are present, DNV will refer to those files when initializing the project.
+-   If **neither** file is present, DNV will generate a basic Dockerfile and docker-compose.yml
+-   If **only one** of either Dockerfile or docker-compose.yml is present, initialization will error out
 
 ### Initialization options / prompts
 
@@ -383,7 +383,6 @@ Shows a 'metrics' display for the node process. Shows graphs for
 Lets you open the README.md for your project's dependencies.
 
 ![terminal-readme](https://user-images.githubusercontent.com/13556/126916953-b69d2d57-ea3a-4e05-8332-382a51d4dbfd.png)
-
 
 Pressing `Ctrl + e` opens a sections menu for quick navigation.
 
