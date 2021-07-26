@@ -307,6 +307,10 @@ Note that the 'Metrics display' option is only available with the External Volum
 
 Also, when using the external volume option you should use `dnv stop` to stop a docker compose project originally started with `dnv ui` / `dnv up`, rather than through the Docker Desktop UI (since it doesn't remember that the project was started with a unique .yml file)
 
+#### What is this 'docker-compose-dnv-gen.yml' file?
+
+DNV generates a separate .yml file to use with docker-compose up when you're utilizing the external volume option. This simply copies your docker-compose.yml and adds in the necessary parts to define the external volume. Note that this is re-generated (when needed) from scratch every time changes are detected, so any modifications you make in docker-compose-dnv-gen.yml will be lost (the --nosync flag bypasses this, for testing purposes). In other words, edit your `docker-compose.yml` as usual, and those changes will get transferred to `docker-compose-dnv-gen.yml` the next time you run `dnv ui` / `dnv up`.
+
 ### Restarting containers option
 
 If you choose 'yes' for `Restart containers when source files change?`, then DNV will...do exactly that: Restart containers when your project's source files change. If you're already using something like `nodemon` for your project then you should \***\*not\*\*** use this feature.
