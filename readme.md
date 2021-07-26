@@ -32,11 +32,14 @@ Friction-less Node Development in Docker Compose
         -   [Use alternate node image when DNV starts service (w/ External Volume option)](#use-alternate-node-image-when-dnv-starts-service-w-external-volume-option)
     -   [External Volume option](#external-volume-option)
         -   [What does this mean?](#what-does-this-mean)
+        -   [How does DNV work if I don't use the external volume option?](#how-does-dnv-work-if-i-dont-use-the-external-volume-option)
         -   [Should I use this?](#should-i-use-this)
+        -   [What is this 'docker-compose-dnv-gen.yml' file?](#what-is-this-docker-compose-dnv-genyml-file)
+        -   [What if I need to install linux dependencies?](#what-if-i-need-to-install-linux-dependencies)
     -   [Restarting containers option](#restarting-containers-option)
 -   [DNV UI](#dnv-ui)
     -   [Commands](#commands)
-    -   [Action menu (Ctrl + a)](#action-menu-ctrl--a)
+    -   [Actions menu (Ctrl + a)](#actions-menu-ctrl--a)
         -   [bash / sh](#bash--sh)
         -   [exec](#exec)
         -   [repl](#repl)
@@ -51,6 +54,7 @@ Friction-less Node Development in Docker Compose
     -   [Step 2 - Install gsudo](#step-2---install-gsudo)
     -   [Step 3 - Install Windows Terminal Preview and create a profile to run the WSL as Admin](#step-3---install-windows-terminal-preview-and-create-a-profile-to-run-the-wsl-as-admin)
     -   [Step 4 (optional) - Modify .bashrc to navigate to Linux home directory on startup](#step-4-optional---modify-bashrc-to-navigate-to-linux-home-directory-on-startup)
+-   [Thanks](#thanks)
 
 <!-- End Document Outline -->
 
@@ -411,6 +415,33 @@ Restarts the container
 ### Notes
 
 `dnv ui` and `dnv up` will stop containers on exit if it is responsible for starting ALL containers for a project (they weren't already running). Otherwise, it doesn't stop any project-associated container.
+
+## Tutorial
+
+Here's a simple project you can make to test DNV:
+
+1. First, pull a number-versioned Node image for docker (i.e. `docker pull node:16.5`)
+2. Create a new folder and run `npm init`
+3. Run `npm install express`
+4. Create an index.js file with the following contents:
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.listen(80, () => {
+    console.log('Express listening');
+});
+```
+
+5. Add a 'start' entry to 'scripts' in the package.json file:
+
+```json
+ "start": "node index.js"
+```
+
+6. Run `dnv init` and pick the default values for the provided prompts, except for the 'Metrics' and 'Restart containers' prompts, where you'll need to press `space` to select a service and then `Enter`
+7. Run `dnv ui`
 
 ## DNV?!
 
