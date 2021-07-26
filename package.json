@@ -1,8 +1,9 @@
 {
     "name": "dnv",
     "version": "0.2.3",
-    "description": "",
+    "description": "DNV: Friction-less Node Development in Docker Compose",
     "main": "src/index.js",
+    "repository": "https://github.com/moofoo/dnv",
     "bin": {
         "dnv": "bin/dnv"
     },
@@ -10,8 +11,23 @@
     "scripts": {
         "preuninstall": "node ./src/preuninstall.js"
     },
-    "author": "",
-    "license": "ISC",
+    "author": {
+        "name": "Nathan Cook",
+        "email": "nathancookdev@gmail.com"
+    },
+    "license": "MIT",
+    "keywords": [
+        "terminal",
+        "console",
+        "cli",
+        "shell",
+        "xterm",
+        "command-line",
+        "multiplexing",
+        "docker",
+        "compose",
+        "docker-compose"
+    ],
     "dependencies": {
         "aggregation": "^1.2.7",
         "ansi-escapes": "^4.3.2",
