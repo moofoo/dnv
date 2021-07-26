@@ -152,7 +152,7 @@ class TerminalProcessType {
 
                 this.execStream.on(
                     'data',
-                    getTermBufferer(this.id, this.onData)
+                    getTermBufferer(`${this.id}'process`, this.onData)
                 );
                 this.execStream.on('close', this.onClose);
 
@@ -230,7 +230,7 @@ class TerminalProcessType {
 
     disposeProcess() {
         if (this.execStream) {
-            stopBuffering(this.id);
+            stopBuffering(`${this.id}'process`);
             this.execStream.end();
             destroy(this.execStream);
             this.execStream = null;

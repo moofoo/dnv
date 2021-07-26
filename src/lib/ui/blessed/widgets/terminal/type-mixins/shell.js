@@ -316,7 +316,16 @@ class TerminalShellType {
     }
 
     setupStreams() {
-        this.pty.on('data', getTermBufferer(this.id, this.onPtyData, true));
+        this.pty.on(
+            'data',
+            getTermBufferer(
+                `${this.id}${this.options.termType}${
+                    this.options.shellType || ''
+                }`,
+                this.onPtyData,
+                true
+            )
+        );
 
         this.offBinaryData = this.term.onBinary(this.onBinaryData);
 
@@ -818,7 +827,11 @@ class TerminalShellType {
 
     disposeShell() {
         if (this.shell) {
-            stopBuffering(this.id);
+            stopBuffering(
+                `${this.id}${this.options.termType}${
+                    this.options.shellType || ''
+                }`
+            );
 
             this.muteStream.off('keypress', this.input);
             this.stdin.off('data', this.muteWrite);
