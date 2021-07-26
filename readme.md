@@ -6,49 +6,51 @@ Friction-less Node Development in Docker Compose
 
 <!-- Start Document Outline -->
 
--   [Install](#install)
--   [Description](#description)
--   [Basic Usage](#basic-usage)
-    -   [Initialize DNV Project](#initialize-dnv-project)
-    -   [Run DNV UI](#run-dnv-ui)
--   [DNV CLI commands](#dnv-cli-commands)
-    -   [Clear](#clear)
-    -   [Config](#config)
-    -   [Info](#info)
-    -   [Init](#init)
-    -   [UI](#ui)
-    -   [Up](#up)
-    -   [Stop](#stop)
--   [DNV Init Notes](#dnv-init-notes)
-    -   [Behavior with existing Dockerfile / docker-compose.yml files](#behavior-with-existing-dockerfile--docker-composeyml-files)
-    -   [Initialization options / prompts](#initialization-options--prompts)
-        -   [Package Manager](#package-manager)
-        -   [External Volume](#external-volume)
-        -   [Working Directory](#working-directory)
-        -   [Dockerfile Node Image](#dockerfile-node-image)
-        -   [Use Node User](#use-node-user)
-        -   [Restart containers option](#restart-containers-option)
-        -   [Metrics display option (w/ External Volume option)](#metrics-display-option-w-external-volume-option)
-        -   [Use alternate node image when DNV starts service (w/ External Volume option)](#use-alternate-node-image-when-dnv-starts-service-w-external-volume-option)
-    -   [External Volume option](#external-volume-option)
-        -   [What does this mean?](#what-does-this-mean)
-        -   [Should I use this?](#should-i-use-this)
-    -   [Restarting containers option](#restarting-containers-option)
--   [DNV UI commands](#dnv-ui-commands)
-    -   [Action menu (Ctrl + a)](#action-menu-ctrl--a)
-        -   [bash / sh](#bash--sh)
-        -   [exec](#exec)
-        -   [repl](#repl)
-        -   [scripts](#scripts)
-        -   [metrics](#metrics)
-        -   [readme](#readme)
-        -   [restart](#restart)
--   [DNV?!](#dnv)
--   [Running DNV on Windows with WSL](#running-dnv-on-windows-with-wsl)
-    -   [Step 1 - Running WSL as Admin](#step-1---running-wsl-as-admin)
-    -   [Step 2 - Install gsudo](#step-2---install-gsudo)
-    -   [Step 3 - Install Windows Terminal Preview and create a profile to run the WSL as Admin](#step-3---install-windows-terminal-preview-and-create-a-profile-to-run-the-wsl-as-admin)
-    -   [Step 4 (optional) - Modify .bashrc to navigate to Linux home directory on startup](#step-4-optional---modify-bashrc-to-navigate-to-linux-home-directory-on-startup)
+* [Install](#install)
+* [Description](#description)
+* [Basic Usage](#basic-usage)
+	* [Initialize DNV Project](#initialize-dnv-project)
+	* [Run DNV UI](#run-dnv-ui)
+* [DNV CLI commands](#dnv-cli-commands)
+	* [Clear](#clear)
+	* [Config](#config)
+	* [Info](#info)
+	* [Init](#init)
+	* [UI](#ui)
+	* [Up](#up)
+	* [Stop](#stop)
+* [DNV Init](#dnv-init)
+	* [Behavior with existing Dockerfile / docker-compose.yml files](#behavior-with-existing-dockerfile--docker-composeyml-files)
+	* [Initialization options / prompts](#initialization-options--prompts)
+		* [Package Manager](#package-manager)
+		* [External Volume](#external-volume)
+		* [Working Directory](#working-directory)
+		* [Dockerfile Node Image](#dockerfile-node-image)
+		* [Use Node User](#use-node-user)
+		* [Restart containers option](#restart-containers-option)
+		* [Metrics display option (w/ External Volume option)](#metrics-display-option-w-external-volume-option)
+		* [Use alternate node image when DNV starts service (w/ External Volume option)](#use-alternate-node-image-when-dnv-starts-service-w-external-volume-option)
+	* [External Volume option](#external-volume-option)
+		* [What does this mean?](#what-does-this-mean)
+		* [Should I use this?](#should-i-use-this)
+	* [Restarting containers option](#restarting-containers-option)
+* [DNV UI](#dnv-ui)
+	* [Commands](#commands)
+	* [Action menu (Ctrl + a)](#action-menu-ctrl--a)
+		* [bash / sh](#bash--sh)
+		* [exec](#exec)
+		* [repl](#repl)
+		* [scripts](#scripts)
+		* [metrics](#metrics)
+		* [readme](#readme)
+		* [restart](#restart)
+	* [Notes](#notes)
+* [DNV?!](#dnv)
+* [Running DNV on Windows with WSL](#running-dnv-on-windows-with-wsl)
+	* [Step 1 - Running WSL as Admin](#step-1---running-wsl-as-admin)
+	* [Step 2 - Install gsudo](#step-2---install-gsudo)
+	* [Step 3 - Install Windows Terminal Preview and create a profile to run the WSL as Admin](#step-3---install-windows-terminal-preview-and-create-a-profile-to-run-the-wsl-as-admin)
+	* [Step 4 (optional) - Modify .bashrc to navigate to Linux home directory on startup](#step-4-optional---modify-bashrc-to-navigate-to-linux-home-directory-on-startup)
 
 <!-- End Document Outline -->
 
@@ -208,7 +210,7 @@ Run docker-compose stop for current directory project
 
 (Useful when the 'External Volume' option is set during project initialization)
 
-## DNV Init Notes
+## DNV Init
 
 ### Behavior with existing Dockerfile / docker-compose.yml files
 
@@ -299,11 +301,15 @@ If you're just starting development and don't have your Node dependencies nailed
 
 Note that the 'Metrics display' option is only available with the External Volume option enabled.
 
+Also, you should use `dnv stop` to stop a docker compose project originally started with `dnv ui` / `dnv up`, rather than through the Docker Desktop UI (since it doesn't remember that the project was started with a specific .yml file, it will mess up)
+
 ### Restarting containers option
 
 If you choose 'yes' for `Restart containers when source files change?`, then DNV will...do exactly that: Restart containers when your project's source files change. If you're already using something like `nodemon` for your project then you should \***\*not\*\*** use this feature.
 
-## DNV UI commands
+## DNV UI
+
+### Commands
 
 (press `F9` in the UI to see command list)
 
@@ -344,6 +350,8 @@ Opens a bash / sh shell in the container
 
 Shows a list of installed programs (installed via apt/apk as well as npm globally installed packages). If you run, for example, `apt update` and then `apt install htop` in a bash/sh shell, then `htop` will appear in the exec menu.
 
+![termina-exec](https://user-images.githubusercontent.com/13556/126916942-d23105b7-9ac1-4c14-b36a-4c81ec261fd8.png)
+
 #### repl
 
 Opens a repl session in your project directory
@@ -357,6 +365,8 @@ Shows a list of options comprising
 
 Pressing `space` (as opposed to enter) shows a prompt to enter arguments (in the case of .sh scripts) or modify the executed command (for package.json script entries)
 
+![terminal-scripts](https://user-images.githubusercontent.com/13556/126916961-e364d525-4081-480b-8396-8da90745c5b0.png)
+
 #### metrics
 
 Shows a 'metrics' display for the node process. Shows graphs for
@@ -366,15 +376,26 @@ Shows a 'metrics' display for the node process. Shows graphs for
 -   Event loop time
 -   Active handles
 
+![termina-metrics](https://user-images.githubusercontent.com/13556/126916951-15be272e-4dde-48aa-9bb5-a49bc5f9bbfd.png)
+
 #### readme
 
 Lets you open the README.md for your project's dependencies.
 
+![terminal-readme](https://user-images.githubusercontent.com/13556/126916953-b69d2d57-ea3a-4e05-8332-382a51d4dbfd.png)
+
+
 Pressing `Ctrl + e` opens a sections menu for quick navigation.
+
+![terminal-readme-sections](https://user-images.githubusercontent.com/13556/126916958-4ab736eb-2db0-4e00-8867-58c0aeeb1d1f.png)
 
 #### restart
 
 Restarts the container
+
+### Notes
+
+`dnv ui` and `dnv up` will stop containers on exit if it is responsible for starting ALL containers for a project (they weren't already running). Otherwise, it doesn't stop any project-associated container.
 
 ## DNV?!
 
