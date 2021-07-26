@@ -231,10 +231,6 @@ class CmdList extends blessed.List {
                     return;
                 }
 
-                this.panel.debug(item);
-
-                this.panel.debug(data);
-
                 this.selecting = true;
 
                 this.removeAllListeners('select');

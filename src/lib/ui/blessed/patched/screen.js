@@ -584,9 +584,6 @@ blessed.Screen.prototype._listenMouse = function (el) {
             if (el.options.focusParent && el.parent !== self.focused) {
                 el.parent.focus();
             } else if (!el.options.focusParent) {
-                if (el.parent && el.parent.debug) {
-                    el.parent.debug('focusing');
-                }
                 el.focus();
             }
         }
@@ -640,13 +637,6 @@ blessed.Screen.prototype._listenMouse = function (el) {
                     el._outsideInsideFired = false;
                     const location = el.isOutside(data.x, data.y);
 
-                    if (el.options.key === 'node_service') {
-                        el.parent.debug(
-                            location
-                                ? `${location.where} ${location.offset.x} ${location.offset.y}`
-                                : 'no location'
-                        );
-                    }
                     if (el.options.outsideMove === true) {
                         el.emit('out-move', data, location);
                     } else if (Array.isArray(el.options.outsideMove)) {

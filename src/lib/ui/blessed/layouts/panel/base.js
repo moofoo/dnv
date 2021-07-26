@@ -555,7 +555,6 @@ class PanelBase extends blessed.Box {
                 !this.activeItem.copyPromptOpen &&
                 !this.screen.exitOpen
             ) {
-                this.parent.debug(`${this.options.key} unselected`);
                 this.onBlur();
             }
         });

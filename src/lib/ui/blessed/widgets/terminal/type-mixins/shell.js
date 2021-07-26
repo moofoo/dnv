@@ -57,12 +57,6 @@ class TerminalShellType {
 
             this.lastCommand = [];
 
-            this.key('insert', () => {
-                this.parent.debug(
-                    `command line ${this.onCommandLine} shellProgram ${this.shellProgram} prompt ${this._onPrompt}`
-                );
-            });
-
             this.on('term write', (data) => {
                 if (this.checkInput > 0) {
                     this.checkInput--;

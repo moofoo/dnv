@@ -669,10 +669,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                             global: true,
                                             match: ' add | install | i | del | unintall | remove | purge| rm | r | un | unlink ',
                                             fn: (term) => {
-                                                term.parent.debug(
-                                                    'clearing exec items'
-                                                );
-
                                                 config.setProjectConfigProp(
                                                     pathKey,
                                                     'execItems',
@@ -1229,10 +1225,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         }
     });
 
-    /*screen.on('mouse', (key) => {
-        layout.debug(key);
-    });*/
-
     const close = () => {
         screen.userClose = true;
         screen.program.closing = true;
@@ -1270,11 +1262,11 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             }
 
             /*
-                There's probably a more elegant way to clean up the processes than this aggressive double pkill x2 business.
-                But this reliably kills processes started from shells (i.e. opening bash/sh then running 'top').
+                There's probably a more elegant way to clean up the processes than this aggressive pkill x2 business.
+                But, this reliably kills processes started from shells (i.e. opening bash/sh then running 'top').
                 Just doing one pass would sometimes fail to kill the starting bash/sh process, especially with
                 multiple shell + program process pairs to clean up
-*/
+            */
 
             if (cleanProcs) {
                 await Promise.all(
@@ -1323,10 +1315,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
     });
 
     layout.focus();
-
-    screen.program.on('debug', (data) => {
-        screen.debug(data);
-    });
 
     setTimeout(() => {
         screen.emit('resize');

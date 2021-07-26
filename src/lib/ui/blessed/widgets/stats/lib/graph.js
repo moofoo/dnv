@@ -213,8 +213,6 @@ class Graph {
     }
 
     _createGraph(options) {
-        this.options.debug('NEW LINE');
-
         this.node = new Line({
             debug: this.parent.debug.bind(this.parent),
             parent: this.parent,

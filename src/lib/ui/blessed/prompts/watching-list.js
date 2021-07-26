@@ -230,11 +230,6 @@ class WatchingList extends blessed.List {
 
                 const { name, value } = this.items[index];
 
-                this.options.debug(
-                    index,
-                    `${JSON.stringify(this.itemList[index])} `
-                );
-
                 this.onEnter(this.itemList[index], item, index);
             });
         }, 125);

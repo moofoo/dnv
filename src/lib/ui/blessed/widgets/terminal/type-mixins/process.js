@@ -59,10 +59,6 @@ class TerminalProcessType {
             this.on('line state', () => {
                 if (this.lineState.active && !this.streamOpen) {
                     this.execCommand();
-                } else {
-                    this.parent.debug(
-                        `${this.lineState.active} ${this.streamOpen}`
-                    );
                 }
             });
 
