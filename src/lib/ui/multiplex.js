@@ -96,6 +96,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
     let items = [];
     const containerService = {};
+
     /*
     items.push({
         termType: 'base',

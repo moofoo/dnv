@@ -641,13 +641,6 @@ class PanelGrid {
             this.minimizing = false;
         }, 250);
     }
-
-    reattach(element) {
-        if (Object.values(this.items).includes(element)) {
-            element.detach();
-            this.append(element);
-        }
-    }
 }
 
 module.exports = PanelGrid;

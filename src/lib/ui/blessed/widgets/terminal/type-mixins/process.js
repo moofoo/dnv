@@ -129,6 +129,8 @@ class TerminalProcessType {
 
             this.clear({ firstLine: true });
 
+            this.streamOpen = true;
+
             this.write(lines.join('\n') + '\n', () => {
                 this.startingUp = false;
                 this.skipData = false;
@@ -150,11 +152,8 @@ class TerminalProcessType {
                     'data',
                     getTermBufferer(`${this.id}'process`, this.onData)
                 );
-                this.execStream.on('close', this.onClose);
 
-                if (!this.options.showConsoleCursor) {
-                    this.hideCursor();
-                }
+                this.execStream.on('close', this.onClose);
 
                 resolve();
             });
