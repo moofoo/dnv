@@ -313,7 +313,7 @@ DNV generates a separate .yml file to use with docker-compose up when you're uti
 
 #### What if I need to install linux dependencies?
 
-The recommended solution is to specify a numbered-version Node image to use with DNV, like `node:16.5` (You can set this with the 'Use alternate node image when DNV starts service' if you're using an alpine image in your Dockerfile). Hopefully this covers most cases where would need to install extra dependencies in the container (like you often need to do if you're using an alpine image).
+The recommended solution is to specify a numbered-version Node image to use with DNV, like `node:16.5` (You can set this with the 'Use alternate node image when DNV starts service' if you're using an alpine image in your Dockerfile). Hopefully this covers most cases where you would need to install extra dependencies in the container (like you often need to do if you're using an alpine image).
 
 If that doesn't cover you, you can create a custom Node image with those dependencies installed and select it for the 'Use alternate node image when DNV starts service' option. Alternately, just don't use the External Volume option.
 
@@ -482,7 +482,7 @@ By default, WSL will open to a directory like `/mnt/c/WINDOWS/system32`, which i
     -   `cd ~`
 -   Press `Ctrl + O` and then `Enter` to save, and then `Ctrl + X` to quit.
 
-Also, be sure to take a lookat [NodeJS on WSL](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl).
+Also, be sure to take a look at [NodeJS on WSL](https://docs.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl).
 
 ## Thanks
 
