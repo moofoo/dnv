@@ -311,6 +311,12 @@ Also, when using the external volume option you should use `dnv stop` to stop a 
 
 DNV generates a separate .yml file to use with docker-compose up when you're utilizing the external volume option. This simply copies your docker-compose.yml and adds in the necessary parts to define the external volume. Note that this is re-generated (when needed) from scratch every time changes are detected, so any modifications you make in docker-compose-dnv-gen.yml will be lost (the --nosync flag bypasses this, for testing purposes). In other words, edit your `docker-compose.yml` as usual, and those changes will get transferred to `docker-compose-dnv-gen.yml` the next time you run `dnv ui` / `dnv up`.
 
+#### What if I need to install linux dependencies?
+
+The recommended solution is to specify a numbered-version Node image to use with DNV, like `node:16.5` (You can set this with the 'Use alternate node image when DNV starts service' if you're using an alpine image in your Dockerfile). Hopefully this covers most cases where would need to install extra dependencies in the container (like you often need to do if you're using an alpine image).
+
+If that doesn't cover you, you can create a custom Node image with those dependencies installed and select it for the 'Use alternate node image when DNV starts service' option. Alternately, just don't use the External Volume option.
+
 ### Restarting containers option
 
 If you choose 'yes' for `Restart containers when source files change?`, then DNV will...do exactly that: Restart containers when your project's source files change. If you're already using something like `nodemon` for your project then you should \***\*not\*\*** use this feature.
