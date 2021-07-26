@@ -332,6 +332,10 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                 return;
                             }
 
+                            if (!panel) {
+                                return;
+                            }
+
                             if (selected.includes('watching ')) {
                                 containerOpts.switching = true;
 
@@ -963,10 +967,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                         cmd,
                                         shell,
                                         category,
-                                        hasArgs,
-                                        subPanel,
-                                        panel,
-                                        positionParent
+                                        hasArgs
                                     ) => {
                                         if (
                                             name === 'Nothing found' ||
