@@ -62,7 +62,7 @@ $ npm install -g dnv
 
 ## Description
 
-DNV works behind the scenes to keep dependencies in your Docker container in-sync with your your local project.
+DNV works behind the scenes to keep dependencies in your Docker container in-sync with your local project.
 
 It also comes with a custom made, featureful ncurses-like UI designed
 for use when developing apps using Docker Compose.
