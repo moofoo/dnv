@@ -395,7 +395,7 @@ const getShellScripts = async (shell, containerName, workingDir) => {
 
 const createDnvGroup = async (shell, containerName, user = 'root') => {
     try {
-        if (shell === '/bin/sh') {
+        if (!shell.includes('bash')) {
             // running an -alpine image
             await execa(
                 'docker',
@@ -428,16 +428,16 @@ const createDnvGroup = async (shell, containerName, user = 'root') => {
 
 const killDnvProcesses = async (shell, containerName) => {
     try {
-        if (shell === '/bin/sh') {
+        if (!shell.includes('bash')) {
             await execa(
                 'docker',
                 [
                     'exec',
                     '-u=root',
                     containerName,
-                    shell,
+                    '/bin/bash',
                     '-c',
-                    `"kill -9 $(ps -o pid,group | grep dnv | awk '{print $1}' | xargs)"`,
+                    `"kill -9 $(ps o pid,group | grep dnv | awk '{print $1}' | xargs)"`,
                     //    `"kill -9 $(ps -o pid,group | grep dnv | awk '{print $1}' | xargs) && kill -9 $(ps -o pid,group | grep dnv | awk '{print $1}' | xargs)"`,
                 ],
                 { shell: true }
@@ -449,9 +449,9 @@ const killDnvProcesses = async (shell, containerName) => {
                     'exec',
                     '-u=root',
                     containerName,
-                    shell,
+                    '/bin/sh',
                     '-c',
-                    '"pkill -G dnv',
+                    '"pkill -G dnv"',
                     //'"pkill -G dnv && pkill -G dnv"'
                 ],
                 {

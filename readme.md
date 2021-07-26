@@ -488,11 +488,15 @@ Also, be sure to take a look at [NodeJS on WSL](https://docs.microsoft.com/en-us
 
 I'm indebted to the work done on the Blessed Terminal widget by [RSE - Blessed Xterm](https://github.com/rse/blessed-xterm) and [astefanutti - Kubebox](https://github.com/astefanutti/kubebox).
 
-The updates to Blessed color-handling make use of code from [robey - antsy](https://github.com/robey/antsy) and the [XTerm](https://github.com/xtermjs/xterm.js) source.
+The updates to Blessed color-handling make use of code from [robey - antsy](https://github.com/robey/antsy), the [XTerm](https://github.com/xtermjs/xterm.js) source, and [VSCode](https://github.com/microsoft/vscode). The VSCode source is a **great** resource.
 
 The 'metrics' display for the UI is based on code from [FormidableLabs - nodejs-dashboard](https://github.com/FormidableLabs/nodejs-dashboard)
 
 Additional box borders are from [cancerberoSgx - flor](https://github.com/cancerberoSgx/flor)
+
+[cancerberoSgx - cli-driver](https://www.npmjs.com/package/cli-driver) is used in the integration tests and is **awesome**.
+
+I think DNV has 10 dependencies created by [sindresorhus](https://github.com/sindresorhus). Maybe more. Thank you.
 
 Of course, the underlying tech that drives the extensively modified Blessed Terminal widget used by the DNV UI is [XTerm](https://github.com/xtermjs/xterm.js), which is amazing, in my opinion. Displaying
 multiple logs with 1000+ line scrollback performantly simply wasn't feasible with the Log widget that comes with Blessed.

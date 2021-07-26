@@ -1,3 +1,5 @@
+// From: https://github.com/cancerberoSgx/flor
+
 const boxStyles = {
     light: {
         topLeft: '┌',

@@ -32,7 +32,6 @@ const UI = require('./blessed/layouts/ui');
 const Grid = require('./blessed/layouts/grid');
 
 const {
-    BaseTerm,
     ShellTerminal,
     ProgramTerminal,
     MarkdownTerminal,
@@ -45,7 +44,6 @@ const help = require('./blessed/other/display-help');
 const ContainerOpts = require('./blessed/prompts/container-opts');
 const closePrompt = require('./blessed/prompts/exit-prompt');
 const CmdList = require('./blessed/prompts/cmd-list');
-const WritePrompt = require('./blessed/prompts/write-prompt');
 const WatchingList = require('./blessed/prompts/watching-list');
 const Panel = require('./blessed/layouts/panel');
 const Manager = require('./blessed/prompts/file-manager');
@@ -1255,7 +1253,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
         screen.render();
 
-        setTimeout(async () => {
+        (async () => {
             screen.render();
 
             if (eventStream) {
@@ -1270,14 +1268,14 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             */
 
             if (cleanProcs) {
-                await Promise.all(
+                Promise.all(
                     Object.values(services).map((info) =>
                         killDnvProcesses(info.shell, info.containerName)
                     )
                 );
 
                 // Once more, with feeling
-                await Promise.all(
+                Promise.all(
                     Object.values(services).map((info) =>
                         killDnvProcesses(info.shell, info.containerName)
                     )
@@ -1301,10 +1299,10 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             setTimeout(() => {
                 screen.destroy();
                 process.stdout.write('\x1b[?25h');
-                process.stdout.write(ansiEscapes.clearTerminal);
+                // process.stdout.write(ansiEscapes.clearTerminal);
                 process.exit(0);
-            }, 500);
-        }, 250);
+            }, 1000);
+        })();
     };
 
     screen.key('C-q', () => {

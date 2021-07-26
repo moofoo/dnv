@@ -1,14 +1,8 @@
-/**
- * colors.js - color-related functions for blessed.
- * Copyright (c) 2013-2015, Christopher Jeffrey and contributors (MIT License).
- * https://github.com/chjj/blessed
- *
- */
 const blessed = require('blessed');
 const memoize = require('lodash.memoize');
 const nearestColor = require('./antsy-color');
 let ansi256 = require('./ansi256.json');
-const { Color, Format } = require('./vscode');
+const { Color } = require('./vscode');
 const { AttributeData } = require('./xterm/attributedata');
 
 blessed.colors.isXterm = (color, layer = 'fg') => {
@@ -60,15 +54,23 @@ const checkColor = (color) => {
     return null;
 };
 
+const badOrDefault = (color) => {
+    if (
+        color === -1 ||
+        color === 0x1ff ||
+        color === null ||
+        color === undefined ||
+        (color.trim && color.trim() === '')
+    ) {
+        return true;
+    }
+
+    return false;
+};
+
 blessed.colors.darken = memoize(
     (color, factor, layer) => {
-        if (
-            color === -1 ||
-            color === 0x1ff ||
-            color === null ||
-            color === '' ||
-            !color
-        ) {
+        if (badOrDefault(color)) {
             if (layer === 'fg') {
                 color = 7;
             } else {
@@ -115,13 +117,7 @@ blessed.colors.darken = memoize(
 
 blessed.colors.convert = memoize(
     (color, layer = 'fg') => {
-        if (
-            color === -1 ||
-            color === 0x1ff ||
-            color === undefined ||
-            color === null ||
-            (color.trim && color.trim() === '')
-        ) {
+        if (badOrDefault(color)) {
             return 0x1ff;
         }
 
@@ -198,13 +194,7 @@ blessed.colors.match = function (
     isXterm,
     getRGB = false
 ) {
-    if (
-        r1 === -1 ||
-        r1 === 0x1ff ||
-        r1 === undefined ||
-        r1 === null ||
-        (r1.trim && r1.trim() === '')
-    ) {
+    if (badOrDefault(r1)) {
         if (layer === 'fg') {
             return getRGB ? ansi256[15].rgb : 15;
         } else {
@@ -294,23 +284,11 @@ blessed.colors.reduce = function (color) {
 // Blend function from XTerm source
 blessed.colors.blend = memoize(
     (fg = 15, bg = 0, alpha = 0.5) => {
-        if (
-            fg === -1 ||
-            fg === 0x1ff ||
-            fg === undefined ||
-            fg === null ||
-            (fg.trim && fg.trim() === '')
-        ) {
+        if (badOrDefault(fg)) {
             fg = 15;
         }
 
-        if (
-            bg === -1 ||
-            bg === 0x1ff ||
-            bg === undefined ||
-            bg === null ||
-            (bg.trim && bg.trim() === '')
-        ) {
+        if (badOrDefault(bg)) {
             bg = 0;
         }
 
