@@ -488,5 +488,7 @@ I'm indebted to the work done on the Blessed Terminal widget by [RSE - Blessed X
 
 The updates to Blessed color-handling make use of code from [robey - antsy](https://github.com/robey/antsy) and the [XTerm](https://github.com/xtermjs/xterm.js) source.
 
+The 'metrics' display for the UI is based on code from [FormidableLabs - nodejs-dashboard](https://github.com/FormidableLabs/nodejs-dashboard)
+
 Of course, the underlying tech that drives the extensively modified Blessed Terminal widget used by DNV UI is [XTerm](https://github.com/xtermjs/xterm.js), which is amazing, in my opinion. Displaying
 multiple logs with 1000+ line scrollback performantly simply wasn't feasible with Log widget that comes with Blessed.
