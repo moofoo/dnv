@@ -481,3 +481,12 @@ By default, WSL will open to a directory like `/mnt/c/WINDOWS/system32`, which i
 -   In the nano editor, scroll to the very bottom of the .bashrc file and add the following line:
     -   `cd ~`
 -   Press `Ctrl + O` and then `Enter` to save, and then `Ctrl + X` to quit.
+
+## Thanks
+
+I'm indebted to the work done on the Blessed Terminal widget by [RSE - Blessed Xterm](https://github.com/rse/blessed-xterm) and [astefanutti - Kubebox](https://github.com/astefanutti/kubebox).
+
+The updates to Blessed color-handling make use of code from [robey - antsy](https://github.com/robey/antsy) and the [XTerm](https://github.com/xtermjs/xterm.js) source.
+
+Of course, the underlying tech that drives the extensively modified Blessed Terminal widget used by DNV UI is [XTerm](https://github.com/xtermjs/xterm.js), which is amazing, in my opinion. Displaying
+multiple logs with 1000+ line scrollback performantly simply wasn't feasible with Log widget that comes with Blessed.
