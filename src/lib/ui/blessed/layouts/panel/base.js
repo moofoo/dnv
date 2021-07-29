@@ -663,14 +663,6 @@ class PanelBase extends blessed.Box {
                   'Bright'
             : this.border.fg;
     }
-
-    setStyle(key, opts) {
-        if (this.gridActive) {
-            this.activeItem.__setStyle(key, opts);
-        } else {
-            super.setStyle(key, opts);
-        }
-    }
 }
 
 module.exports = PanelBase;

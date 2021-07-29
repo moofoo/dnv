@@ -192,6 +192,12 @@ blessed.Element.prototype.setLabel = function (options, style) {
     return true;
 };
 
+/*
+    - Adds italics and darken decorations
+    - Checks if border style properties are functions, runs them (this seemed like an OK place to put this)
+    - Different arguments for blessed.colors.convert because of changes to blessed.colors handling code,
+      see ./color
+*/
 blessed.Element.prototype.sattr = function (style, fg, bg) {
     var bold = style.bold,
         underline = style.underline,
@@ -249,8 +255,10 @@ blessed.Element.prototype.sattr = function (style, fg, bg) {
 };
 
 /*
-    Only thing is a 'noBorder' flag to toggle rendering of element borders without needing to touch the element style
-    Also changed how shadows are rendered
+    - Added noBorder flag to skip border rendering (used by Panel widget when in grid display mode)
+    - Added noScrollbar flag
+    - Changed how shadows are rendered, using new 'darken' method for colors
+    - More border styles, using .border.type property (see ./borders.js)
 */
 blessed.Element.prototype.render = function (renderContent = true) {
     renderContent = this.options.renderContent || renderContent;
@@ -982,6 +990,7 @@ blessed.Element.prototype.render = function (renderContent = true) {
 };
 
 blessed.Element.prototype._render = blessed.Element.prototype.render;
+
 /*
     Make .hidden a bit more robust by checking immediate parent, so it's viable to
     use in place of .visible (which recurses up the node tree on every execution)
@@ -1001,25 +1010,6 @@ blessed.Element.prototype.__defineGetter__('hidden', function () {
 blessed.Element.prototype.__defineSetter__('hidden', function (value) {
     this._hidden = value;
 });
-
-// See the Panel layout initItem method and UiLogger updateLabelAndStyle method
-// The idea is that this gets overriden by a parent element, so depending on
-// the sitation, calls to setStyle can be applied to the parent or to the child
-blessed.Element.prototype.setStyle = function (key, opts) {
-    if (key && !this.style[key]) {
-        this.style[key] = {};
-    }
-
-    const style = key ? this.style[key] : this.style;
-
-    if (typeof opts === 'string') {
-        style.fg = opts;
-    } else {
-        for (const [key, val] of Object.entries(opts)) {
-            style[key] = val;
-        }
-    }
-};
 
 blessed.Element.prototype.isInside = function (x, y) {
     if (this.screen.hover === this) {

@@ -641,10 +641,6 @@ class UI extends Grid {
 
         this.screen.append(this.listBar);
 
-        this.listBar.setStyle('border', 'brightblue');
-
-        //this.listBar.select(1);
-
         this.listBarPages.forEach(
             function (page, index) {
                 page.page = true;
