@@ -1253,7 +1253,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
         screen.render();
 
-        (async () => {
+        setTimeout(() => {
             screen.render();
 
             if (eventStream) {
@@ -1299,10 +1299,10 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             setTimeout(() => {
                 screen.destroy();
                 process.stdout.write('\x1b[?25h');
-                // process.stdout.write(ansiEscapes.clearTerminal);
+                process.stdout.write(ansiEscapes.clearTerminal);
                 process.exit(0);
             }, 1000);
-        })();
+        }, 250);
     };
 
     screen.key('C-q', () => {
