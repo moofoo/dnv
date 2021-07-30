@@ -12,3 +12,5 @@
 
     -   Is this really a needed feature? (The 'feature', more specifically, being DNV generating the Dockerfile and docker-compose.yml).
     -   Such a setup. with a pre-existing Dockerfile / docker-compose.yml, **should** still work, absent those prompts. Need to verify this.
+
+- yarn 3.0 support
