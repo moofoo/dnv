@@ -302,7 +302,7 @@ Well, `docker-compose up` won't build images for your Node containers from the D
 
 #### How does DNV work if I don't use the external volume option?
 
-DNV monitors lock files for changes and selectively rebuilds container images, if needed, when running `dnv ui` or `dnv up
+DNV monitors lock files for changes and selectively rebuilds container images, if needed, when running `dnv ui` or `dnv up`
 
 #### Should I use this?
 
