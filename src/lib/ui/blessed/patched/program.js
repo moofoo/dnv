@@ -1,7 +1,5 @@
 const blessed = require('blessed');
 const { Buffer } = require('buffer');
-const { xyz } = require('color');
-const { action } = require('commander');
 const sgr = require('./sgr');
 
 const nextTick = global.setImmediate || process.nextTick.bind(process);
@@ -257,7 +255,7 @@ blessed.Program.prototype._attr = function (param, val) {
     Require our modified keys file
 */
 blessed.Program.prototype._listenInput = function () {
-    //PATCH: customized keys (adding Alt-directions, Alt-home, Alt-end)
+    //PATCH: customized keys (adds a bunch of additional keys)
     var keys = require('./keys'),
         self = this;
 
@@ -397,7 +395,7 @@ blessed.Program.prototype._listenOutput = function () {
 };
 
 /*
-    Temporary fix. Stream objects are getting nulled before Blessed has finished cleanup on exit.
+    Temporary fix? Stream objects are getting nulled before Blessed has finished cleanup on exit.
 */
 blessed.Program.prototype.destroy = function () {
     var index = blessed.Program.instances.indexOf(this);
@@ -469,6 +467,30 @@ blessed.Program.prototype.term = function (is) {
 
     return this.terminal.indexOf(is) === 0;
 };
+
+/*
+    Additions/mods:
+
+    - double and triple clicking
+    - mouse dragging
+    - 'deadcell' detection (still not sure if this is something I've accidentally caused somehow or it's just how mouse stuff in the terminal works)
+
+    Regarding mouse dragging:
+
+        The following code implements 'mouse drag' events. It changes the emitted action from mousedown to mousemove
+        and adds a 'dragging' flag to the key event.
+
+            (need to revisit the change from 'mousedown' to 'mousemove' at some point, it causes incompatibility with some widgets.
+            could just update those widgets in a blessed fork)
+
+        Blessed doesn't differentiate between the differing 'button' (b) values for left, middle, right buttons
+        that happen when dragging, which this code does.
+
+        It also recognizes dragging while holding ctrl or alt with left/middle/right
+
+        Absolutely zero idea how portable this all is. I'm developing in WSL2 (Debian),
+        with TERM=xterm-256color.
+*/
 
 blessed.Program.prototype._bindMouse = function (s, buf, stream = null) {
     this.detail = this.detail !== undefined ? this.detail : 1;
@@ -659,19 +681,6 @@ blessed.Program.prototype._bindMouse = function (s, buf, stream = null) {
 
             this._lastButton = key.button;
         }
-
-        /*
-                The following code implements 'mouse drag' events, switching the emitted action from mousedown to mousemove,
-                and setting the 'dragging' flag to true
-
-                Blessed doesn't differentiate between the differing 'button' (b) values for left, middle, right buttons
-                that happen when dragging, which this code does.
-
-                It also recognizes dragging while holding ctrl or alt with left/middle/right
-
-                Absolutely zero idea how portable this all is. I'm developing in WSL2 (Debian),
-                with TERM=xterm-256color.
-           */
 
         if (
             this._lastButton &&

@@ -3,7 +3,10 @@ const memoize = require('lodash.memoize');
 const nearestColor = require('./antsy-color');
 let ansi256 = require('./ansi256.json');
 const { Color } = require('./vscode');
-const { AttributeData } = require('./xterm/attributedata');
+
+const {
+    AttributeData,
+} = require('../../widgets/terminal/util/celldata/attributedata');
 
 blessed.colors.isXterm = (color, layer = 'fg') => {
     let isXterm;

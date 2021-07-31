@@ -7,7 +7,7 @@
     This is a re-write of the XTerm SelectionService class for use in a terminal environment, with
     mouse events coming from Blessed.
 
-    The Blessed->XTerm translation is managed by the _screenElement.ownerDocument object(which would be Document in a
+    The Blessed->XTerm translation is managed by the _screenElement.ownerDocument object (which would be Document in a
     browser environment). Mainly this involves changing the property names for button and coordinates
     of Blessed events to make them mirror DOM events, enough so SelectionService will work with them, as well as
     doing some DNV UI specific logic. See ./owner-document.js

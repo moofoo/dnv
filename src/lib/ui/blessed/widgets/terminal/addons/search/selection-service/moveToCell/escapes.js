@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2018 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */
+
 module.exports.C0 = {
     /** Null (Caret: ^@, C: \0) */
     NUL: '\x00',

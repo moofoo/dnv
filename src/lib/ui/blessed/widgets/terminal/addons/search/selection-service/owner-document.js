@@ -1,5 +1,5 @@
 /*
-    Replacement for the instance._screenElement.ownerDocument object, since we're not in a browser environment.
+    Replacement for the selectionService._screenElement.ownerDocument object, since we're not in a browser environment.
     This communicates terminal mouse events emitted by Blessed to the XTerm selection service and does some DNV UI specific logic.
 */
 
