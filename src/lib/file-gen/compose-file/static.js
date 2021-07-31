@@ -37,9 +37,9 @@ class ComposeStatic {
         }
 
         let msg = '';
+
         if (output.failed) {
             msg = `${chalk.bold.red(`Validation Error in ${filename}`)}\n`;
-
             msg += output.stderr;
         } else {
             msg = output.stdout;
@@ -71,7 +71,8 @@ class ComposeStatic {
 
             const json = YAMLJS.parse(
                 fs.readFileSync(cf.path, { encoding: 'utf-8' })
-            ); // jsyaml.load(fs.readFileSync(cf.path, { encoding: 'utf-8' }));
+            );
+
             serviceNames = Object.keys(json.services);
         } else {
             validated.composeFile = {

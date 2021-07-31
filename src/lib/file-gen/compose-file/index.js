@@ -3,17 +3,14 @@ const path = require('path');
 const YAMLJS = require('yamljs');
 const execa = require('execa');
 const omit = require('lodash.omit');
-const { files } = require('../../files');
-
-const DockerFile = require('../docker-file');
-
-const ComposeStatic = require('./static');
-
 const aggregation = require('aggregation/es6');
+const cloneDeep = require('lodash.clonedeep');
 
-const ComposeParseHelpers = require('./parse-helpers');
-
+const { files } = require('../../files');
 const { prepPath } = require('../util');
+const DockerFile = require('../docker-file');
+const ComposeStatic = require('./static');
+const ComposeParseHelpers = require('./parse-helpers');
 
 class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
     static getInstance(
@@ -74,18 +71,34 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
 
         this.composeFileTime = files.fileTime(this.path);
 
-        let content = this.configComposeFile({ cwd });
+        let [content, services] = this.configComposeFile({ cwd });
 
         if (!content) {
             content = fs.readFileSync(this.path, 'utf8');
         }
 
-        this.json = YAMLJS.parse(content, 8); //jsyaml.load(this.content);
+        if (content) {
+            const json = YAMLJS.parse(content, 8);
 
-        this.projectName = projectName || files.getFormattedDir(cwd);
+            if (json.services) {
+                const jsonServices = cloneDeep(json.services);
 
-        if (this.json && parse) {
-            this.parse(this.json);
+                json.services = {};
+
+                for (const name of services) {
+                    json.services[name] = jsonServices[name];
+                }
+            }
+
+            this.projectName = projectName || files.getFormattedDir(cwd);
+
+            this.json = json;
+
+            if (json && parse) {
+                this.parse(json);
+            }
+        } else {
+            throw new Error('Error reading docker-compose.yml');
         }
     }
 
@@ -102,7 +115,15 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         }
 
         if (output.stdout) {
-            return output.stdout;
+            const { stdout: services } = execa.commandSync(
+                `docker-compose config --services`,
+                {
+                    cwd,
+                    stdio: 'pipe',
+                }
+            );
+
+            return [output.stdout, services.split('\n').map((s) => s.trim())];
         }
 
         return null;
@@ -111,11 +132,12 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
     parse(json) {
         json = json || this.json;
 
-        const { services } = this.json;
+        const { services } = json;
 
         const tmp = {};
         const serviceNames = [];
         const nameCounts = {};
+        let order = 0;
 
         for (const [serviceName, serviceInfo] of Object.entries(services)) {
             let {
@@ -142,7 +164,9 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
 
             serviceNames.push(serviceName);
 
-            let service = { serviceName, compose: serviceInfo };
+            let service = { serviceName, compose: serviceInfo, order };
+
+            order++;
 
             let isNode = false;
 

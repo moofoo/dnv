@@ -49,8 +49,6 @@ const Panel = require('./blessed/layouts/panel');
 const Manager = require('./blessed/prompts/file-manager');
 
 const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
-    process.stdout.write(ansiEscapes.clearTerminal);
-
     let mouseDisabled = false;
     screen.program.enableMouse();
 

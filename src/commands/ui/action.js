@@ -1,13 +1,12 @@
 const CFonts = require('cfonts');
-const ansiEscapes = require('ansi-escapes');
-const { error } = require('../../lib/text');
-
-const { config } = require('../../lib/config');
-const multiplex = require('../../lib/ui/multiplex');
-const blessed = require('../../lib/ui/blessed');
 const pWaterfall = require('p-waterfall');
 const chalk = require('chalk');
 const os = require('os');
+
+const { error } = require('../../lib/text');
+const { config } = require('../../lib/config');
+const blessed = require('../../lib/ui/blessed');
+const multiplex = require('../../lib/ui/multiplex');
 
 const {
     checkAndValidateFiles,
@@ -243,34 +242,26 @@ const startDnvUI = async (opts) => {
         progressMsg('Attaching to Containers');
     }
 
-    setTimeout(() => {
-        const splashInterval = setInterval(() => {
-            if (updateBoxContent()) {
-                clearInterval(splashInterval);
+    const splashInterval = setInterval(() => {
+        if (updateBoxContent()) {
+            clearInterval(splashInterval);
 
-                setTimeout(async () => {
-                    box.free();
-                    box.detach();
-                    box.destroy();
-                    box = null;
+            setTimeout(async () => {
+                box.free();
+                box.detach();
+                box.destroy();
+                box = null;
 
-                    progress.free();
-                    progress.destroy();
-                    progress = null;
+                progress.free();
+                progress.destroy();
+                progress = null;
 
-                    screen.render();
+                screen.render();
 
-                    await multiplex(
-                        opts,
-                        services,
-                        !allUp,
-                        screen,
-                        uiScrollback
-                    );
-                }, 750);
-            }
-        }, 70);
-    }, 500);
+                await multiplex(opts, services, !allUp, screen, uiScrollback);
+            }, 500);
+        }
+    }, 70);
 };
 
 const wrapTasks = (tasks) => {

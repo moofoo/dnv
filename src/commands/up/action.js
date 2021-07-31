@@ -13,19 +13,14 @@ const {
     dnvBuild,
 } = require('../../lib/docker/cli');
 const { config } = require('../../lib/config');
-
 const { error, info } = require('../../lib/text');
 const { stopContainer } = require('../../lib/docker/containers');
-const watch = require('../../lib/watcher');
-
 const { getContainerStateSync } = require('../../lib/docker/containers');
-
+const { color } = require('../../lib/ui/blessed/util/prettify');
+const { files } = require('../../lib/files');
+const watch = require('../../lib/watcher');
 const ComposeFile = require('../../lib/file-gen/compose-file');
 const DnvComposeFile = require('../../lib/file-gen/dnv-compose-file');
-
-const { color } = require('../../lib/ui/blessed/util/prettify');
-
-const { files } = require('../../lib/files');
 
 function IsJsonString(str) {
     try {
@@ -142,7 +137,7 @@ const optionProcessing = async (opts) => {
             )
         ) {
             progressMsg(error('Invalid value provided for --since', false));
-            return;
+            process.exit(0);
         }
     }
 
@@ -324,7 +319,7 @@ const optionProcessing = async (opts) => {
 };
 
 const setupServiceSince = async (opts) => {
-    let { uiSince, services, progressMsg } = opts;
+    let { uiSince, services } = opts;
 
     const statuses = {};
 
@@ -511,6 +506,7 @@ const populateVolumeAndInstallDependences = async (opts) => {
             These timeouts are just so blessed displays progress msgs as a nice sequence instead
             of all at once when loading the DNV UI
         */
+
         setTimeout(async () => {
             let populated = true;
 
