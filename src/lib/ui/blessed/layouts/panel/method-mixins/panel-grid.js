@@ -546,15 +546,17 @@ class PanelGrid {
 
         this.position.width = width;
         this.position.left = left;
-        this.top = top;
-        this.height = height;
+        this.position.top = top;
+        this.position.height = height;
 
         this.noBorder = false;
 
         this.nextTicks = [];
 
         if (minimizer) {
+            // what is this doing?
             this.screen.program.closing = true;
+
             setTimeout(() => {
                 this.screen.program.closing = false;
             }, 250);
@@ -593,6 +595,7 @@ class PanelGrid {
         } else {
             for (const item of Object.values(this.items)) {
                 item.maximized = false;
+
                 if (item.itemKey !== this.activeKey) {
                     item.hide();
                     item.resizeOnFocus = true;
@@ -626,7 +629,8 @@ class PanelGrid {
 
         this.nextTicks.push(() => {
             this.updateLabels();
-            if (!this.selected && this.activeHelp && !this.gridActive) {
+
+            if (!this.selected && !this.gridActive && this.activeHelp) {
                 this.activeHelp.hide();
             }
 
@@ -639,7 +643,7 @@ class PanelGrid {
 
         setTimeout(() => {
             this.minimizing = false;
-        }, 250);
+        }, 50);
     }
 }
 

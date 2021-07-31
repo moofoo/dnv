@@ -291,16 +291,6 @@ class UI extends Grid {
     }
 
     minimizeItem(key, minimizer = null) {
-        if (this.minimizing === minimizer) {
-            return;
-        }
-
-        this.minimizing = minimizer;
-
-        setTimeout(() => {
-            this.minimizing = null;
-        }, 250);
-
         const item = this.getItem(key);
 
         const gridActive = item.gridActive;

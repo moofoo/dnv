@@ -4,12 +4,12 @@ const TerminalRenderer = require('marked-terminal');
 const chalk = require('chalk');
 const memoize = require('lodash.memoize');
 const toc = require('markdown-toc');
+const stripAnsi = require('strip-ansi');
 const { stripHtml } = require('string-strip-html');
 const cardinalTheme = require('../../../../util/repl/cardinal-theme');
-const stripAnsi = require('strip-ansi');
-const chalkMemo = memoize(chalk.hex.bind(chalk));
-
 const { getOptions } = require('./cfonts');
+
+const chalkMemo = memoize(chalk.hex.bind(chalk));
 
 const escapeRegExp = (string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

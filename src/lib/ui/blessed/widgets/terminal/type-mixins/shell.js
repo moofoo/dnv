@@ -103,7 +103,12 @@ class TerminalShellType {
             });
 
             this.on('shell program', () => {
-                if (this.lastCommand && this.lastCommand.length) {
+                if (
+                    this.options.shellType !== 'repl' &&
+                    this.lastCommand &&
+                    this.lastCommand.length &&
+                    this.options.addToRecent
+                ) {
                     this.options.addToRecent(this.lastCommand[0]);
                 }
             });
@@ -543,9 +548,9 @@ class TerminalShellType {
                         this.persisting = false;
 
                         this.pty.write('\u0003');
-                        this.pty.write('\n');
-                        this.pty.write('\u0004');
-                        this.pty.write('\u001b');
+                        this.pty.write('\nexit\n');
+
+                        return false;
                     }
                 }
             }

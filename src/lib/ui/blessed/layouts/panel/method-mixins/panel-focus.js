@@ -102,8 +102,6 @@ class PanelFocus {
     focusLeft() {
         const item = this.activeItem;
 
-        const mapKey = this.options.mapKey;
-
         const coords = {
             row: item.row,
             col: item.col,
@@ -147,8 +145,6 @@ class PanelFocus {
 
     focusRight() {
         const item = this.activeItem;
-
-        const mapKey = this.options.mapKey;
 
         const coords = {
             row: item.row,

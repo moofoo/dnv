@@ -35,29 +35,13 @@
         - Unusually large jumps in mouse coordinates (while dragging) are ignored.
 */
 
-const SelectionModel = require('./model');
+const os = require('os');
 const { Disposable } = require('./disposable');
 const { EventEmitter } = require('./emitter');
-const os = require('os');
+const { moveToCellSequence } = require('./moveToCell');
+const SelectionModel = require('./model');
 const CellData = require('../../../util/celldata');
 const OwnerDocument = require('./owner-document');
-const { moveToCellSequence } = require('./moveToCell');
-
-/**
- * The number of pixels the mouse needs to be above or below the viewport in
- * order to scroll at the maximum speed.
- */
-const DRAG_SCROLL_MAX_THRESHOLD = 50;
-
-/**
- * The maximum scrolling speed
- */
-const DRAG_SCROLL_MAX_SPEED = 5;
-
-/**
- * The number of milliseconds between drag scroll updates.
- */
-const DRAG_SCROLL_INTERVAL = 15;
 
 /**
  * The maximum amount of time that can have elapsed for an alt click to move the

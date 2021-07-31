@@ -167,16 +167,12 @@ class TerminalEvents {
         this.on('attach', () => {
             this.lastParent = this.parent;
 
-            this.preResize(false, false);
-
             this.resize(true);
 
             this.firstAttach = false;
         });
 
         this.once('render', () => {
-            this.preResize(false, false);
-
             this.resize(true);
         });
 

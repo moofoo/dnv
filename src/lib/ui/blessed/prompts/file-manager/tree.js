@@ -73,6 +73,12 @@ function Tree(options) {
         this.screen.grabMouse = false;
     });
 
+    this.rows.on('out-click', (data) => {
+        if (data.button === 'left') {
+            this.destroy();
+        }
+    });
+
     this.rows.grabMouse = true;
     this.screen.grabMouse = true;
 

@@ -32,6 +32,7 @@ const UI = require('./blessed/layouts/ui');
 const Grid = require('./blessed/layouts/grid');
 
 const {
+    BaseTerm,
     ShellTerminal,
     ProgramTerminal,
     MarkdownTerminal,
@@ -93,7 +94,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
     let items = [];
     const containerService = {};
 
-    /*
     items.push({
         termType: 'base',
         prettyprint: true,
@@ -105,7 +105,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             bg: 'black',
         },
     });
-    */
 
     const getWatchCount = () => {
         let watchingCount = 0;
@@ -303,6 +302,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                     }
 
                     if (item.options.processType === 'log') {
+                        containerItems.push('');
                         containerItems.push('restart');
                     }
 
@@ -311,6 +311,8 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                             `watching ${getWatchCount()} path(s)`
                         );
                     }
+
+                    let height = containerItems.length + 2;
 
                     panel.switching = true;
 
@@ -323,7 +325,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                         items: containerItems,
                         subLists: ['exec', 'scripts', 'readme', 'recent'],
                         width: 21,
-                        height: 10,
+                        height,
                         action: async (selected) => {
                             if (!selected) {
                                 return;
@@ -562,6 +564,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                                 parent: screen,
                                                 positionParent: term,
                                                 subPanel: term,
+                                                panel,
                                                 path: info.path,
                                                 action: function (node) {
                                                     term.setScrollPerc(100);
@@ -713,6 +716,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                             if (
                                                 item.name.includes('python') &&
                                                 item.name !== 'python' &&
+                                                item.name !== 'python2' &&
                                                 item.name !== 'python3'
                                             ) {
                                                 return false;
@@ -1251,6 +1255,13 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
         screen.render();
 
+        const destroyTimeout = setTimeout(() => {
+            screen.destroy();
+            process.stdout.write('\x1b[?25h');
+            process.stdout.write(ansiEscapes.clearTerminal);
+            process.exit(0);
+        }, 5000);
+
         setTimeout(() => {
             screen.render();
 
@@ -1295,6 +1306,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             }
 
             setTimeout(() => {
+                clearTimeout(destroyTimeout);
                 screen.destroy();
                 process.stdout.write('\x1b[?25h');
                 process.stdout.write(ansiEscapes.clearTerminal);

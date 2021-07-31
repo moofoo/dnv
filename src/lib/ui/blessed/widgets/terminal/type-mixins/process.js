@@ -1,9 +1,7 @@
 const destroy = require('destroy');
-
 const execa = require('execa');
 const debounce = require('lodash.debounce');
 const scrollBackStream = require('../util/scrollback-stream');
-
 const parseCommand = require('../util/parse-command');
 const {
     getTermBufferer,
@@ -67,8 +65,10 @@ class TerminalProcessType {
                 debounce(
                     () => {
                         const scrollPerc = this.getScrollPerc();
-                        const oldUnseenLine = this.lineState.unseenLine;
-                        const oldUnseenProblem = this.lineState.unseenProblem;
+                        const oldUnseenLine =
+                            this.lineState.unseenLine || false;
+                        const oldUnseenProblem =
+                            this.lineState.unseenProblem || false;
 
                         if (scrollPerc === 100) {
                             this.lineState.unseenLine = false;

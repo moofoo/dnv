@@ -63,7 +63,7 @@ const gridHelp = (screen) => {
         top: 'center',
         left: 'center',
         width: 135,
-        height: 29,
+        height: 31,
         border: {
             type: 'line',
             fg: 'red',
@@ -153,6 +153,7 @@ const gridHelp = (screen) => {
     command(middle, 'Triple Click', 'Select Line');
     command(middle, 'Incremental Select', 'Ctrl + Left Button');
     command(middle, 'Move Cursor (if visible)', 'Alt + Left Button');
+    command(middle, 'Open Actions Menu', 'Right click in focused panel');
 
     return container;
 };

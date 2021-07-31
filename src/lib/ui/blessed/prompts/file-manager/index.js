@@ -32,6 +32,10 @@ var explorer = (path, debug) => ({
                         return true;
                     }
                 } else {
+                    if (!child.includes('.')) {
+                        return false;
+                    }
+
                     if (
                         child.charAt(0) !== '.' &&
                         !child.includes('.json') &&
@@ -97,6 +101,8 @@ class Manager extends blessed.Box {
 
         this.action = this.options.action;
 
+        this.panel = this.options.panel;
+
         this.subPanel = this.options.subPanel;
 
         this.onMouseUp = this.onMouseUp.bind(this);
@@ -131,11 +137,13 @@ class Manager extends blessed.Box {
 
     initManager() {
         const screen = this.screen;
+        const panel = this.panel;
         const subPanel = this.subPanel;
 
-        subPanel.popover = true;
+        panel.popover = true;
+        panel.switching = true;
 
-        //screen.grabMouse = true;
+        screen.grabMouse = true;
         screen.promptOpen = true;
         subPanel.popoverCoords = this._getCoords(true);
 
@@ -144,14 +152,20 @@ class Manager extends blessed.Box {
         this.on('destroy', () => {
             this.screen.off('mouseup', this.onMouseUp);
 
-            subPanel.popover = false;
-            subPanel.focus();
+            screen.grabMouse = false;
+            screen.grabKeys = false;
+            screen.promptOpen = false;
 
-            screen.render();
+            panel.popover = false;
+            panel.switching = false;
+            subPanel.popover = false;
 
             process.nextTick(() => {
+                if (panel && panel.selected) {
+                    panel.focus();
+                }
                 screen.options.checkScrollable = false;
-                //   screen.grabMouse = false;
+                screen.grabMouse = false;
                 screen.promptOpen = false;
                 screen.render();
             });
@@ -181,16 +195,20 @@ class Manager extends blessed.Box {
         process.nextTick(() => {
             this.screen.on('mouseup', this.onMouseUp);
 
+            this.tree.rows.on('out-click', (data) => {
+                if (data.button === 'left') {
+                    this.destroy();
+                }
+            });
+
             this.tree.rows.key('escape', () => {
-                //    this.tree.rows.grabMouse = false;
-                //     this.screen.grabMouse = false;
                 this.destroy();
             });
 
             this.tree.on('select', async (node) => {
+                this.panel.selected = true;
+
                 await this.action(node);
-                //    this.tree.rows.grabMouse = false;
-                //    this.screen.grabMouse = false;
 
                 this.destroy();
             });

@@ -47,13 +47,7 @@ class Grid extends blessed.Box {
 
         this.focusedIndexOnPage = { 0: 0 };
 
-        this.debug = this.debug.bind(this); /*throttle(
-        ,
-            100
-        ); /* debounce(this.debug.bind(this), 50, {
-            trailing: true,
-            leading: true,
-        });*/
+        this.debug = this.debug.bind(this);
 
         this.screen.debug = this.debug.bind(this);
 
@@ -98,7 +92,7 @@ class Grid extends blessed.Box {
     }
 
     get focusedIndex() {
-        return this.focusedIndexOnPage[this.currentPage];
+        return this.focusedIndexOnPage[this.currentPage] || 0;
     }
 
     set focusedIndex(value) {
@@ -615,8 +609,6 @@ class Grid extends blessed.Box {
         let rowSpan = 1;
         let colSpan = 1;
 
-        const spansByKey = {};
-
         for (let opts of items) {
             let row = null;
             let col = null;
@@ -662,7 +654,6 @@ class Grid extends blessed.Box {
                 cols = 1;
                 rows = 2;
                 startCols = 1;
-                startRows = 2;
             } else {
                 if (colSpans[row]) {
                     if (colSpanIndex >= 0) {
@@ -862,8 +853,9 @@ class Grid extends blessed.Box {
                     child.resize(true);
                 }
             }
+
+            this.screen.render();
         }
-        this.screen.render();
     }
 
     initEvents() {
@@ -1062,6 +1054,7 @@ class Grid extends blessed.Box {
 
     showPage(page, cb) {
         let change = false;
+
         if (page !== undefined) {
             if (this.currentPage !== page) {
                 change = true;
@@ -1397,7 +1390,6 @@ class Grid extends blessed.Box {
         if (1 === 1) {
             return;
         }
-
         if (this.parent !== this.screen && this.parent.debug) {
             this.parent.debug(text, clear, diff);
             return;

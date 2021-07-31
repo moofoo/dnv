@@ -164,7 +164,7 @@ class CopyPrompt {
             all.hide();
             visible.hide();
 
-            if (copyAll !== undefined) {
+            if (copyAll !== null) {
                 cLabel.width += 2;
                 cLabel.setContent('Copied!');
                 this.termRender(true);

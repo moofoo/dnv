@@ -192,7 +192,7 @@ let remainingGradients = [...gradients];
 let remainingTwoTones = [...twoTones];
 let remainingFonts = [...fonts];
 
-const getOptions = (text) => {
+const getOptions = () => {
     let font =
         remainingFonts.length === 1
             ? remainingFonts[0]

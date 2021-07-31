@@ -16,12 +16,6 @@
         - if targetX is greater than length of line (trimmed, so target is on un-touched cells), move to the last character in that line
 
     'onCommandLine' comes from the Blessed Terminal widget, it determines this while copying cells from the XTerm to Blessed buffer.
-     This is also pretty simple: While looping through the cells, check for two:
-        - a cell containing one of the characters '$', '>', or '#'.
-        - the cell containing the cursor (by coordinates, provided by Xterm buffer, and by making sure the cell at those coordinates
-          actually contains one of the cursor characters (_, |) or is inverse (block))
-
-     If the cursor cell comes after the first, (going down the screen), then you're on a command line.
 */
 
 const { C0 } = require('./escapes');

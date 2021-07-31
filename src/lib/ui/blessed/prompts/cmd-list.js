@@ -92,6 +92,9 @@ class CmdList extends blessed.List {
         this.onEnter = (this.options.onEnter || this.genericOnEnter).bind(this);
         this.showArgumentsPrompt = this.showArgumentsPrompt.bind(this);
 
+        this.switchingPanels = false;
+        this.switchingSubPanels = false;
+
         this.activate();
     }
 
@@ -153,6 +156,7 @@ class CmdList extends blessed.List {
     initCmdListEvents() {
         const screen = this.screen;
         const panel = this.panel;
+        const subPanel = this.subPanel;
         const categories = this.categories;
 
         if (this.options.categories) {
@@ -174,21 +178,11 @@ class CmdList extends blessed.List {
         }
 
         setTimeout(() => {
-            this.on('out-click', (data) => {
-                if (data.button === 'left') {
-                    this.destroy();
-                }
-            });
-
             this.on('destroy', () => {
                 this.grabMouse = false;
                 this.grabKeys = false;
                 this.exiting = true;
                 this.options.positionParent = null;
-
-                screen.grabMouse = false;
-                screen.grabKeys = false;
-                screen.promptOpen = false;
 
                 while (categories.length) {
                     categories.shift().destroy();
@@ -196,11 +190,20 @@ class CmdList extends blessed.List {
 
                 this.hide();
 
+                screen.grabMouse = false;
+                screen.grabKeys = false;
+                screen.promptOpen = false;
+
                 panel.popover = false;
                 panel.switching = false;
+                subPanel.popover = false;
+
+                if (subPanel.termRender) {
+                    subPanel.termRender(false, true);
+                }
 
                 process.nextTick(() => {
-                    if (panel.selected) {
+                    if (!this.switchingPanels && panel.selected) {
                         panel.focus();
                     }
 
@@ -216,10 +219,32 @@ class CmdList extends blessed.List {
 
             this.on('keypress', (ch, key) => {
                 if (
-                    ['M-left', 'M-right', 'M-up', 'M-down', 'escape'].includes(
-                        key.full
-                    )
+                    [
+                        'C-left',
+                        'C-right',
+                        'C-up',
+                        'C-down',
+                        'M-left',
+                        'M-right',
+                        'M-up',
+                        'M-down',
+                        'escape',
+                    ].includes(key.full)
                 ) {
+                    if (
+                        ['C-left', 'C-right', 'C-up', 'C-down'].includes(
+                            key.full
+                        )
+                    ) {
+                        this.switchingPanels = true;
+                    } else if (
+                        ['M-left', 'M-right', 'M-up', 'M-down'].includes(
+                            key.full
+                        )
+                    ) {
+                        this.switchingSubPanels = true;
+                    }
+
                     this.destroy();
                 }
             });

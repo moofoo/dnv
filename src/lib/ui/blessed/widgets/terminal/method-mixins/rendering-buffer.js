@@ -352,7 +352,7 @@ class RenderingAndBuffer {
                         bold: nullCell.isBold(),
                         underline: underline || nullCell.isUnderline(),
                         italics: nullCell.isItalic(),
-                        darken: doFade ? 0.15 : 0,
+                        darken: doFade ? 0.25 : 0,
                     },
                     isSelection ? -1 : fg,
                     bg

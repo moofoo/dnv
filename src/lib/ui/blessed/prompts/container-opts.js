@@ -58,6 +58,9 @@ class ContainerOpts extends blessed.List {
         this.panel = this.options.panel;
         this.subPanel = this.options.subPanel;
 
+        this.switchingPanels = false;
+        this.switchingSubPanels = false;
+
         this.activate();
     }
 
@@ -68,6 +71,7 @@ class ContainerOpts extends blessed.List {
     activate() {
         const screen = this.screen;
         const panel = this.panel;
+        const subPanel = this.subPanel;
 
         panel.switching = true;
 
@@ -93,20 +97,32 @@ class ContainerOpts extends blessed.List {
         this.on('destroy', () => {
             this.grabMouse = false;
             this.grabKeys = false;
-            screen.grabMouse = false;
-            screen.grabKeys = false;
-            screen.promptOpen = false;
+            this.exiting = true;
+            this.options.positionParent = null;
+
+            this.hide();
 
             if (!this.switching) {
-                panel.popover = false;
+                screen.grabMouse = false;
+                screen.grabKeys = false;
+                screen.promptOpen = false;
 
-                process.nextTick(() => {
-                    if (panel.selected) {
-                        panel.focus();
-                    }
-                    screen.render();
-                });
+                panel.popover = false;
+                panel.switching = false;
+                subPanel.popover = false;
+
+                if (subPanel.termRender) {
+                    subPanel.termRender(false, true);
+                }
             }
+
+            process.nextTick(() => {
+                if (panel.selected && !this.switching) {
+                    panel.focus();
+                }
+
+                screen.render();
+            });
         });
 
         setTimeout(() => {
@@ -128,11 +144,39 @@ class ContainerOpts extends blessed.List {
                     if (destroy) {
                         this.destroy();
                     }
-                }, 50);
+                }, 100);
             });
 
-            this.key('escape', () => {
-                this.destroy();
+            this.on('keypress', (ch, key) => {
+                if (
+                    [
+                        'C-left',
+                        'C-right',
+                        'C-up',
+                        'C-down',
+                        'M-left',
+                        'M-right',
+                        'M-up',
+                        'M-down',
+                        'escape',
+                    ].includes(key.full)
+                ) {
+                    if (
+                        ['C-left', 'C-right', 'C-up', 'C-down'].includes(
+                            key.full
+                        )
+                    ) {
+                        this.switchingPanels = true;
+                    } else if (
+                        ['M-left', 'M-right', 'M-up', 'M-down'].includes(
+                            key.full
+                        )
+                    ) {
+                        this.switchingSubPanels = true;
+                    }
+
+                    this.destroy();
+                }
             });
 
             let selected = false;
