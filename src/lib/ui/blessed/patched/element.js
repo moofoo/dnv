@@ -875,7 +875,7 @@ blessed.Element.prototype.render = function (renderContent = true) {
         let shAttr;
         let bg;
         let fg;
-        let innerVal = 0.55;
+        let innerVal = 0.575;
         let outerVal = 0.35;
 
         if (Array.isArray(this.shadow)) {

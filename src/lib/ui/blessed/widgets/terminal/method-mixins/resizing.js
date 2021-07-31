@@ -41,7 +41,7 @@ class TerminalResizing {
         return string;
     }
 
-    preResize(force = false, skipD = true) {
+    preResize(force = false, skipData = true) {
         if (!this.term) {
             return;
         }
@@ -74,7 +74,7 @@ class TerminalResizing {
             this.screenWidth = this.screen.width;
             this.screenHeight = this.screen.height;
 
-            if (skipD) {
+            if (skipData) {
                 this.skipData = true;
             }
         }

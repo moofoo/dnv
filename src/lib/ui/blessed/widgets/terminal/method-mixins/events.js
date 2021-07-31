@@ -4,7 +4,8 @@ const clipboardy = require('clipboardy');
 
 class TerminalEvents {
     initializer() {
-        this.initTerminalEvents();
+        this.initTerminalStateEvents();
+        this.initTerminalKeyEvents();
         this.initTermMouseEvents();
     }
 
@@ -129,11 +130,11 @@ class TerminalEvents {
         }
 
         if (
-            !this.ready ||
-            !this.shellProgram ||
             this.hidden ||
             this.screen.focused !== this ||
-            (this.muteStream && this.muteStream.muted)
+            (this.muteStream && this.muteStream.muted) ||
+            !this.ready ||
+            !this.shellProgram
         ) {
             return;
         }
@@ -160,7 +161,113 @@ class TerminalEvents {
         this.termRender(null, true);
     }
 
-    initTerminalEvents() {
+    initTerminalStateEvents() {
+        this.on('resize', this.debouncedResize);
+
+        this.on('attach', () => {
+            this.lastParent = this.parent;
+
+            this.preResize(false, false);
+
+            this.resize(true);
+
+            this.firstAttach = false;
+        });
+
+        this.once('render', () => {
+            this.preResize(false, false);
+
+            this.resize(true);
+        });
+
+        this.on('focus', () => {
+            if (!this.parent || !this.term) {
+                return;
+            }
+
+            this.wheelAmount = 1;
+
+            try {
+                if (this.maximized && !this.panelGrid) {
+                    this.wheelAmount = 2;
+                }
+            } catch {}
+
+            if (this.resizeOnFocus) {
+                this.resizeOnFocus = false;
+                this.preResize();
+                setTimeout(() => {
+                    this.resize(true);
+                });
+            }
+
+            if (this.options.termType === 'process' && this.hidden) {
+                process.nextTick(() => {
+                    this.show();
+                });
+            }
+
+            this.screen.grabKeys = false;
+
+            if (this.onFocusEvent) {
+                this.onFocusEvent(this);
+            }
+
+            setTimeout(() => {
+                if (this.screen.focused === this && this.search) {
+                    this.search.enable();
+                }
+            }, 250);
+        });
+
+        this.on('blur', () => {
+            if (!this.parent || !this.term) {
+                return;
+            }
+
+            this.refresh = true;
+
+            setTimeout(() => {
+                if (this.mouseSelecting && !this.focused) {
+                    this.clearSelection();
+                }
+            });
+
+            if (this.options.showConsoleCursor) {
+                this.hideCursor();
+
+                setTimeout(() => {
+                    if (this.screen.focused === this) {
+                        this.showCursor();
+                    }
+                }, 500);
+            }
+
+            if (this.onBlurEvent) {
+                this.onBlurEvent(this);
+            }
+        });
+
+        this.on('terminal state', (state, change, active) => {
+            this.onTerminalState(state, change, active);
+            this.termRender(true);
+        });
+
+        this.on('destroy', () => {
+            if (this.onDestroy) {
+                this.onDestroy(this);
+            }
+
+            if (this.options.showConsoleCursor) {
+                this.hideCursor();
+            }
+
+            this.persisting = false;
+            this.dispose(true);
+        });
+    }
+
+    initTerminalKeyEvents() {
         const debDelay = 5;
         const shortScroll = 1;
         const fastScroll = 4;
@@ -267,90 +374,6 @@ class TerminalEvents {
             }
         });
 
-        this.on('resize', this.debouncedResize);
-
-        this.on('attach', () => {
-            this.lastParent = this.parent;
-
-            this.resize(true);
-
-            this.firstAttach = false;
-        });
-
-        this.once('render', () => {
-            this.resize(true);
-        });
-
-        this.on('focus', () => {
-            if (!this.parent || !this.term) {
-                return;
-            }
-
-            this.wheelAmount = 1;
-
-            try {
-                if (this.maximized && !this.panelGrid) {
-                    this.wheelAmount = 2;
-                }
-            } catch {}
-
-            if (this.resizeOnFocus) {
-                this.resizeOnFocus = false;
-                this.preResize();
-                setTimeout(() => {
-                    this.resize(true);
-                });
-            }
-
-            if (this.options.termType === 'process' && this.hidden) {
-                process.nextTick(() => {
-                    this.show();
-                });
-            }
-
-            this.screen.grabKeys = false;
-
-            if (this.onFocusEvent) {
-                this.onFocusEvent(this);
-            }
-
-            setTimeout(() => {
-                if (this.screen.focused === this && this.search) {
-                    this.search.enable();
-                }
-            }, 250);
-        });
-
-        this.on('blur', () => {
-            if (!this.parent || !this.term) {
-                return;
-            }
-
-            //   this.term.blur();
-
-            this.refresh = true;
-
-            setTimeout(() => {
-                if (this.mouseSelecting && !this.focused) {
-                    this.clearSelection();
-                }
-            });
-
-            if (this.options.showConsoleCursor) {
-                this.hideCursor();
-
-                setTimeout(() => {
-                    if (this.screen.focused === this) {
-                        this.showCursor();
-                    }
-                }, 500);
-            }
-
-            if (this.onBlurEvent) {
-                this.onBlurEvent(this);
-            }
-        });
-
         this.runningAction = false;
 
         if (this.options.actions) {
@@ -366,30 +389,6 @@ class TerminalEvents {
                 }
             });
         }
-
-        this.on('terminal state', (state, change, active) => {
-            this.onTerminalState(state, change, active);
-            this.termRender(true);
-        });
-
-        this.on('destroy', () => {
-            if (this.onDestroy) {
-                this.onDestroy(this);
-            }
-
-            if (this.options.showConsoleCursor) {
-                this.hideCursor();
-            }
-
-            this.persisting = false;
-            this.dispose(true);
-        });
-
-        this.on('hide', () => {
-            if (this.options.showConsoleCursor) {
-                this.hideCursor();
-            }
-        });
     }
 
     onTerminalState(state, change, active) {

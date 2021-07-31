@@ -45,6 +45,29 @@ class TerminalDimensionsScrolling {
         return this._dimensions();
     }
 
+    get scrolledToTop() {
+        if (this.term) {
+            return this.term.buffer.active.viewportY === 0;
+        }
+
+        return true;
+    }
+
+    get scrolledToBottom() {
+        if (this.term) {
+            if (this.lineCount < this.rows) {
+                return true;
+            }
+
+            return (
+                this.term.buffer.active.viewportY ===
+                this.term.buffer.active.baseY
+            );
+        }
+
+        return true;
+    }
+
     _getPos() {
         var pos = this.lpos;
 
@@ -209,6 +232,13 @@ class TerminalDimensionsScrolling {
             return;
         }
 
+        if (
+            (i === 0 && this.scrolledToTop) ||
+            (i === 100 && this.scrolledToBottom)
+        ) {
+            return;
+        }
+
         this.scrollTo(Math.floor((i / 100) * this.term.buffer.active.baseY));
 
         this.termRender(null, true);
@@ -245,6 +275,13 @@ class TerminalDimensionsScrolling {
 
     scroll(offset) {
         if (!this.term || this.startingUp || this.skipData) {
+            return;
+        }
+
+        if (
+            (offset < 0 && this.scrolledToTop) ||
+            (offset > 0 && this.scrolledToBottom)
+        ) {
             return;
         }
 
