@@ -482,9 +482,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                     return;
                                 }
 
-                                const deps =
-                                    config.get(`projectConfigs.${pathKey}`)
-                                        .uiReplDeps[info.serviceName] || [];
+                                const deps = uiReplDeps[info.serviceName] || [];
 
                                 const devDeps =
                                     uiReplDevDeps[info.serviceName] || [];

@@ -66,6 +66,10 @@ const start = ({ input, output, service = 'service', loadDeps = [] }) => {
         ignoreUndefined: true,
     };
 
+    if (!Array.isArray(loadDeps)) {
+        loadDeps = [loadDeps];
+    }
+
     loadDeps = loadDeps.filter((val) => val);
 
     if (loadDeps.length) {

@@ -16,3 +16,5 @@
 -   yarn 3.0 support
 
 -   So, grid layout is apparently wonky when there's more than one page of services (4 per page). Getting tired of plugging leaky holes with the grid widget, thinking of implementing an autolayout-based thing.
+
+-   In the config, you can configure it so dependencies / dev dependencies are loaded in the REPL session on startup. For whatever reason, loading express doesn't work, while other packages do???
