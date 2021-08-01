@@ -1,7 +1,3 @@
-const {
-    convertTimeLabelToMilliseconds,
-} = require('../../../widgets/stats/lib/time');
-
 class PanelGrid {
     prepGridItem(
         item,
@@ -442,7 +438,6 @@ class PanelGrid {
 
         this.maximizing = true;
 
-        // if (panelGrid && this.activeKeys.length > 1) {
         for (const item of Object.values(this.items)) {
             item.switching = false;
             item.popover = false;
@@ -554,12 +549,11 @@ class PanelGrid {
         this.nextTicks = [];
 
         if (minimizer) {
-            // what is this doing?
             this.screen.program.closing = true;
 
             setTimeout(() => {
                 this.screen.program.closing = false;
-            }, 250);
+            }, 50);
         }
 
         if (this.gridActive) {

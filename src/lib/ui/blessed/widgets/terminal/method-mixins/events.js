@@ -19,7 +19,9 @@ class TerminalEvents {
 
         this.key('C-c', () => {
             if (this.term && this.term.hasSelection() && this.mouseSelecting) {
-                clipboardy.writeSync(this.selectionText.trimRight());
+                try {
+                    clipboardy.writeSync(this.selectionText.trimRight());
+                } catch {}
             }
         });
 
@@ -29,7 +31,9 @@ class TerminalEvents {
                 this.onCommandLine &&
                 this.writable
             ) {
-                this.pty.write(clipboardy.readSync());
+                try {
+                    this.pty.write(clipboardy.readSync());
+                } catch {}
             }
         });
 

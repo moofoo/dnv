@@ -25,8 +25,6 @@ class CmdList extends blessed.List {
                 shadow: true,
                 insideWheel: false,
                 outsideClick: true,
-                outsideMove: ['inside'],
-                outsideMoveBlurred: true,
                 borderMark: true,
                 /* scrollbar: {
                     ch: ' ',

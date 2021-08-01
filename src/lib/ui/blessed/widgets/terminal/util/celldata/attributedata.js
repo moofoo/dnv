@@ -35,6 +35,28 @@ class AttributeData {
         return newObj;
     }
 
+    static isFgPalette(fg) {
+        return (
+            (fg & Attributes.CM_MASK) === Attributes.CM_P16 ||
+            (fg & Attributes.CM_MASK) === Attributes.CM_P256
+        );
+    }
+
+    static isBgPalette(bg) {
+        return (
+            (bg & Attributes.CM_MASK) === Attributes.CM_P16 ||
+            (bg & Attributes.CM_MASK) === Attributes.CM_P256
+        );
+    }
+
+    static isFgRGB(fg) {
+        return (fg & Attributes.CM_MASK) === Attributes.CM_RGB;
+    }
+
+    static isBgRGB(bg) {
+        return (bg & Attributes.CM_MASK) === Attributes.CM_RGB;
+    }
+
     // flags
     isInverse() {
         return this.fg & FgFlags.INVERSE;
@@ -140,7 +162,9 @@ class AttributeData {
             switch (this.extended.underlineColor & Attributes.CM_MASK) {
                 case Attributes.CM_P16:
                 case Attributes.CM_P256:
-                    return this.extended.underlineColor & Attributes.PCOLOR_MASK;
+                    return (
+                        this.extended.underlineColor & Attributes.PCOLOR_MASK
+                    );
                 case Attributes.CM_RGB:
                     return this.extended.underlineColor & Attributes.RGB_MASK;
                 default:
@@ -156,13 +180,16 @@ class AttributeData {
     }
     isUnderlineColorRGB() {
         return this.bg & BgFlags.HAS_EXTENDED && ~this.extended.underlineColor
-            ? (this.extended.underlineColor & Attributes.CM_MASK) === Attributes.CM_RGB
+            ? (this.extended.underlineColor & Attributes.CM_MASK) ===
+                  Attributes.CM_RGB
             : this.isFgRGB();
     }
     isUnderlineColorPalette() {
         return this.bg & BgFlags.HAS_EXTENDED && ~this.extended.underlineColor
-            ? (this.extended.underlineColor & Attributes.CM_MASK) === Attributes.CM_P16 ||
-                  (this.extended.underlineColor & Attributes.CM_MASK) === Attributes.CM_P256
+            ? (this.extended.underlineColor & Attributes.CM_MASK) ===
+                  Attributes.CM_P16 ||
+                  (this.extended.underlineColor & Attributes.CM_MASK) ===
+                      Attributes.CM_P256
             : this.isFgPalette();
     }
     isUnderlineColorDefault() {

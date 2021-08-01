@@ -186,6 +186,10 @@ class ContainerOpts extends blessed.List {
                     return;
                 }
 
+                if (this.value === '') {
+                    return;
+                }
+
                 if (!this.value) {
                     this.value = this.optItems[0];
                 }

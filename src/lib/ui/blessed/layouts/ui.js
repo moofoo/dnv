@@ -437,6 +437,7 @@ class UI extends Grid {
 
         this.screen.key('M-x', () => {
             if (
+                this.itemsOnPage() > 1 &&
                 this.processKeys &&
                 !this.screen.promptOpen &&
                 !this.maxMinTimeout &&
@@ -647,48 +648,7 @@ class UI extends Grid {
                 });
             }.bind(this)
         );
-        /*
-        this.listBar.children.forEach(
-            function (child) {
-                if (!child.page && !child.separator) {
-                    child.style.underline = () => {
-                        if (child.panel && child.panel.selected) {
-                            return true;
-                        }
 
-                        return false;
-                    };
-                    child.style.fg = () => {
-                        if (
-                            child.panel &&
-                            child.panel.mainItem &&
-                            child.panel.mainItem.lineState
-                        ) {
-                            if (child.panel.mainItem.lineState.active) {
-                                if (child.panel.selected) {
-                                    if (child.panel.gridActive) {
-                                        return '#00f0a4';
-                                    } else {
-                                        return 'brightgreen';
-                                    }
-                                } else {
-                                    if (child.panel.gridActive) {
-                                        return '#50ffc7';
-                                    } else {
-                                        return 'green';
-                                    }
-                                }
-                            } else {
-                                return 'red';
-                            }
-                        }
-
-                        return 'default';
-                    };
-                }
-            }.bind(this)
-        );
-*/
         setTimeout(() => {
             if (this.parent === this.screen && this.focusChild) {
                 this.focusChild.focus();

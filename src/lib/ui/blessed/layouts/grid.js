@@ -4,7 +4,6 @@ const merge = require('lodash.merge');
 const cloneDeep = require('lodash.clonedeep');
 const debounce = require('lodash.debounce');
 const throttle = require('lodash.throttle');
-const { throwError } = require('rxjs');
 
 class Grid extends blessed.Box {
     constructor(opts = {}) {
@@ -36,9 +35,18 @@ class Grid extends blessed.Box {
 
         this.itemIds = [];
 
+        let page = 0;
+        let x = 0;
+
         for (const item of this.items) {
+            item.page = page;
             item.id = `${Math.floor(Math.random() * (9999 - 1001) + 1000)}`;
             this.itemIds.push(item.id);
+            x++;
+
+            if (x % this.options.perPage === 0) {
+                page++;
+            }
         }
 
         this.processKeys = options.processKeys;
@@ -110,6 +118,19 @@ class Grid extends blessed.Box {
             rowSpan: item.options.rowSpan,
             colSpan: item.options.colSpan,
         };
+    }
+
+    itemsOnPage(page) {
+        page = page !== undefined ? page : this.currentPage;
+
+        let count = 0;
+        for (const child of this.items) {
+            if (child.page === page) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     postInit() {}
@@ -604,7 +625,7 @@ class Grid extends blessed.Box {
 
         let remainder = items.length;
 
-        let onPage = 0;
+        let page = 0;
 
         let rowSpan = 1;
         let colSpan = 1;
@@ -614,9 +635,14 @@ class Grid extends blessed.Box {
             let col = null;
             let newPage = false;
 
+            page =
+                opts.page !== undefined
+                    ? opts.page
+                    : (opts.options && opts.options.page) || 0;
+
             if (index > 0 && index % perPage === 0) {
                 newPage = true;
-                onPage = 0;
+
                 this.pages++;
                 currentPage++;
                 let pageMap = [];
@@ -629,15 +655,12 @@ class Grid extends blessed.Box {
                 }
 
                 this.itemMap.push([...pageMap]);
-                // if (currentPage > 0) {
+
                 this.focusedIndexOnPage[currentPage] = index;
-                //}
 
                 currentCol = 0;
                 currentRow = 0;
             }
-
-            onPage++;
 
             if (row === null) {
                 row = currentRow;
@@ -672,17 +695,7 @@ class Grid extends blessed.Box {
 
                         colSpan = colSpans[row][colSpanIndex];
                     } else {
-                        if (colSpans[row] === 'rest') {
-                            if (perPage <= onPage) {
-                                perPage += 1;
-                            }
-
-                            if (col >= cols) {
-                                cols += cols - col;
-                            }
-                        } else if (typeof colSpans[row] === 'number') {
-                            cols = colSpans[row];
-                        }
+                        cols = colSpans[row];
                     }
                 } else {
                     colSpanIndex = -1;
@@ -691,10 +704,10 @@ class Grid extends blessed.Box {
                 }
             }
 
-            if (!this.itemMap[this.currentPage][row]) {
-                this.itemMap[this.currentPage][row] = [];
+            if (!this.itemMap[currentPage][row]) {
+                this.itemMap[currentPage][row] = [];
                 for (let y = 0; y < cols; y++) {
-                    this.itemMap[this.currentPage][row].push('');
+                    this.itemMap[currentPage][row].push('');
                 }
             }
 
@@ -730,6 +743,19 @@ class Grid extends blessed.Box {
             colSpan = colSpan || 1;
             rowSpan = rowSpan || 1;
 
+            let modOpts;
+
+            if (page > 0) {
+                const itemsOnPage = this.itemsOnPage(page);
+
+                this.debug(`page ${page} onpage ${itemsOnPage}`);
+
+                if (itemsOnPage === 1) {
+                    rowSpan = 2;
+                    modOpts = { ...options, heightOffset: '100% - 2' };
+                }
+            }
+
             opts = this.arrangeItem(
                 opts,
                 index,
@@ -741,7 +767,7 @@ class Grid extends blessed.Box {
                 colSpan,
                 currentPage,
                 colSpanIndex,
-                options
+                modOpts || options
             );
 
             this.items[index] = {
@@ -1055,6 +1081,8 @@ class Grid extends blessed.Box {
     showPage(page, cb) {
         let change = false;
 
+        this.debug(`current page ${this.currentPage} new page ${page}`);
+
         if (page !== undefined) {
             if (this.currentPage !== page) {
                 change = true;
@@ -1079,6 +1107,7 @@ class Grid extends blessed.Box {
 
         if (change) {
             this.focusItem(this.focusedIndex);
+            this.getItem(this.focusedIndex).focus();
         }
 
         this.emit('show page', this.currentPage);
@@ -1387,9 +1416,6 @@ class Grid extends blessed.Box {
     }
 
     debug(text, clear = false, diff = false) {
-        if (1 === 1) {
-            return;
-        }
         if (this.parent !== this.screen && this.parent.debug) {
             this.parent.debug(text, clear, diff);
             return;

@@ -2,8 +2,9 @@ const blessed = require('blessed');
 
 /*
     These patches add the following:
-    1. List navigation loops (pressing up when the first item is selected selects the last item, etc)
+    1. List navigation looping (pressing up when the first item is selected selects the last item, etc). Based on .options.loop flag
     2. The widget can now handle arbitrary values for list items, instead of being limited to strings
+    3. Scrollbar visibility based on need
 */
 
 blessed.List.prototype.select = function (index) {
@@ -51,6 +52,12 @@ blessed.List.prototype.select = function (index) {
     if (!this.parent) return;
     this.scrollTo(this.selected);
 
+    /*
+        Interesting idea that needs work.
+
+        Colors the top-right/bottom-left border to indicate that scrolling is possible
+        (list height less than item count)
+
     if (
         this.options.borderMark &&
         this.items.length > this.height - this.iheight - 1
@@ -70,6 +77,7 @@ blessed.List.prototype.select = function (index) {
 
         this.setScrollMark();
     }
+    */
 
     // XXX Move `action` and `select` events here.
 
@@ -110,6 +118,8 @@ blessed.List.prototype.setItems = function (items) {
 
     if (!this.mouseSet && this.options.mouse) {
         this.mouseSet = true;
+        this.outsideInterval = null;
+        this.isInside = false;
 
         this.off('element wheeldown');
         this.off('element wheelup');
@@ -125,10 +135,16 @@ blessed.List.prototype.setItems = function (items) {
             });
         }
 
-        if (this.options.outsideMove) {
-            this.outsideInterval = null;
+        /*
+            This is an interesting idea but the implementation needs work work.
 
-            this.isInside = false;
+            The gist: when the list has hidden items (can scroll up or down), if the cursor
+            enters the list element and then goes outside it directly above or below, the list will scroll in that
+            direction.
+
+
+        if (this.options.outsideMove) {
+
 
             const doLoop = this.options.loop;
 
@@ -202,6 +218,7 @@ blessed.List.prototype.setItems = function (items) {
                 }
             });
         }
+              */
     }
 
     var original = this.items.slice(),

@@ -145,7 +145,7 @@ const gridHelp = (screen) => {
 
     top += 1;
 
-    heading(middle, `Mouse (on Linux)`);
+    heading(middle, `Mouse`);
 
     command(middle, 'Scroll with mousewheel');
     command(middle, 'Drag-select text, copy to clipboard with Ctrl+C');

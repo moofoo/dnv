@@ -386,8 +386,8 @@ const getShellScripts = async (shell, containerName, workingDir) => {
         const split = script.split('/');
         return {
             category: 'shell',
-            name: split[split.length - 1],
-            cmd: `${workingDir}/${path.basename(script.replace('./', ''))}`,
+            name: script.replace('./', ''),
+            cmd: `${workingDir}/${script.replace('./', '')}`,
             shell,
         };
     });
@@ -403,7 +403,7 @@ const createDnvGroup = async (shell, containerName, user = 'root') => {
                     'exec',
                     '-u=root',
                     containerName,
-                    shell,
+                    '/bin/sh',
                     '-c',
                     `"addgroup -S dnv && addgroup ${user} dnv"`,
                 ],
@@ -416,7 +416,7 @@ const createDnvGroup = async (shell, containerName, user = 'root') => {
                     'exec',
                     '-u=root',
                     containerName,
-                    shell,
+                    '/bin/bash',
                     '-c',
                     `"groupadd dnv && usermod -aG dnv ${user}"`,
                 ],
@@ -435,10 +435,9 @@ const killDnvProcesses = async (shell, containerName) => {
                     'exec',
                     '-u=root',
                     containerName,
-                    '/bin/bash',
+                    '/bin/sh',
                     '-c',
                     `"kill -9 $(ps o pid,group | grep dnv | awk '{print $1}' | xargs)"`,
-                    //    `"kill -9 $(ps -o pid,group | grep dnv | awk '{print $1}' | xargs) && kill -9 $(ps -o pid,group | grep dnv | awk '{print $1}' | xargs)"`,
                 ],
                 { shell: true }
             );
@@ -449,10 +448,9 @@ const killDnvProcesses = async (shell, containerName) => {
                     'exec',
                     '-u=root',
                     containerName,
-                    '/bin/sh',
+                    '/bin/bash',
                     '-c',
                     '"pkill -G dnv"',
-                    //'"pkill -G dnv && pkill -G dnv"'
                 ],
                 {
                     shell: true,

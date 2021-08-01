@@ -2,8 +2,7 @@
 
 /*
     The color conversion methods used by Antsy (https://github.com/robey/antsy)
-    are faster and more accurate than Blessed. Way more accurate, in some
-    cases (blessed has some weird issues converting HEX to 256-color values)
+    are more accurate than Blessed.
 */
 
 const COLOR_NAMES = {};

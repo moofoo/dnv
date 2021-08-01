@@ -3,36 +3,43 @@ const memoize = require('lodash.memoize');
 const nearestColor = require('./antsy-color');
 let ansi256 = require('./ansi256.json');
 const { Color } = require('./vscode');
+const chunk = require('lodash.chunk');
 
 const {
     AttributeData,
 } = require('../../widgets/terminal/util/celldata/attributedata');
 
-blessed.colors.isXterm = (color, layer = 'fg') => {
-    let isXterm;
+/*
+    Notes:
+        - The memoization of certain color methods is a BIG performance boost in certain cases. For example, Terminal backgrounds displaying docker log output
+          are set by hex codes (when they have focus), and scrolling performance without memoization was reeeal bad. Of course, in the terminal widget case,
+          one could just figure out the ansi code post-conversion and use that, but then you wouldn't have nice color highlighting of the hex in VSCode (priorities, people!)
 
-    if (color === 0x1ff) {
-        return false;
-    }
+        - It's mentioned in ./antsy-color.js and in the README.md, but I want to say again that the nearest color conversion code from https://github.com/robey/antsy
+          was crucial to get everything kosher with regards to conversion to ansi 256 from RGB and from hex codes.
+          Blessed's methods just weren't consistently working correctly. I did a fair amount of digging for better solutions, and antsy's
+          methods were the best I found. (It's also a cool project aside from the color stuff)
 
-    if (typeof color === 'number') {
-        if (layer === 'fg' && (color <= 255 || ((color >> 9) & 0x1ff) <= 255)) {
-            isXterm = false;
-        } else if (layer === 'bg' && (color <= 255 || (color & 0x1ff) <= 255)) {
-            isXterm = false;
-        } else if (color > 255) {
-            isXterm =
-                layer === 'fg'
-                    ? AttributeData.isFgPalette(color) ||
-                      AttributeData.isFgRGB(color)
-                    : AttributeData.isBgPalette(color);
-        }
-    } else {
-        isXterm = false;
-    }
+        - Regarding the isXterm method:
 
-    return isXterm;
-};
+            Conversion methods are used in a couple different contexts, so sometimes you're dealing with numbers -1 to 255,
+            sometimes 0x1ff or 511 which is a special case for Blessed, sometimes numbers greater than 255 (following conversion
+            by either XTerm or Blessed), sometimes hex codes, and sometimes color names (black, brightblue, etc).
+
+            It's important that we catch the XTerm-converted numbers, since Blessed's bit shifting won't handle them correctly.
+
+            This check is done using XTerm's mode checking methods (palette or RGB). If the result is
+            non-zero, then it's an XTerm number. Basically asking, "Does this number make sense to XTerm?".
+
+            This isn't perfect since there is some overlap in the range of numbers following Blessed/XTerm bit shifting,
+            as XTerm covers the whole RGB range and the Blessed numbers that overlap aren't referring to the same color,
+            but eghhhhhh I really don't want to get into resolving that. The overlap is not large, and we're only really dealing
+            with this situation with respect to the Terminal widget.
+
+            A long-term goal is to get Blessed working with 32-bit truecolor RGB output. I think just moving to XTerm's strategy would
+            be the easiest way to accomplish that (not the whole solution, also need to address the code that parses/outputs escape codes).
+            Unfortunately, Blessed's bit shifting is hard coded all over the place, so it would be kind of a pain.
+*/
 
 const ansiHex = ansi256.reduce((acc, curr) => {
     return {
@@ -69,6 +76,33 @@ const badOrDefault = (color) => {
     }
 
     return false;
+};
+
+blessed.colors.isXterm = (color, layer = 'fg') => {
+    let isXterm;
+
+    if (badOrDefault(color)) {
+        return false;
+    }
+
+    if (typeof color === 'number') {
+        if (layer === 'fg' && (color <= 255 || ((color >> 9) & 0x1ff) <= 255)) {
+            isXterm = false;
+        } else if (layer === 'bg' && (color <= 255 || (color & 0x1ff) <= 255)) {
+            isXterm = false;
+        } else if (color > 255) {
+            isXterm =
+                layer === 'fg'
+                    ? AttributeData.isFgPalette(color) ||
+                      AttributeData.isFgRGB(color)
+                    : AttributeData.isBgPalette(color) ||
+                      AttributeData.isBgRGB(color);
+        }
+    } else {
+        isXterm = false;
+    }
+
+    return isXterm;
 };
 
 blessed.colors.darken = memoize(
@@ -112,16 +146,25 @@ blessed.colors.darken = memoize(
 
         return nearestColor(...Color.fromArray(rgb).darken(factor).rgbArray);
     },
-    (color, factor, layer, isXterm) =>
+    (color, factor, layer) =>
         `${
-            color.toString ? color.toString() : color
-        }${factor}${layer}${isXterm}`
+            color && color.toString
+                ? color.toString()
+                : color === undefined || color === null
+                ? 'u'
+                : color
+        }${factor}${layer}`
 );
 
 blessed.colors.convert = memoize(
     (color, layer = 'fg') => {
         if (badOrDefault(color)) {
-            return 0x1ff;
+            //return 0x1ff;
+            if (layer === 'fg') {
+                return 15;
+            } else {
+                return 0;
+            }
         }
 
         const cachedMaybe = checkColor(color);
@@ -185,8 +228,14 @@ blessed.colors.convert = memoize(
 
         return color !== -1 ? color : 0x1ff;
     },
-    (color, layer, isXterm) =>
-        `${color ? color.toString() : 'u'}${layer}${isXterm}`
+    (color, layer) =>
+        `${
+            color && color.toString
+                ? color.toString()
+                : color === undefined || color === null
+                ? 'u'
+                : color
+        }${layer}`
 );
 
 blessed.colors.match = function (
@@ -278,13 +327,14 @@ blessed.colors.match = function (
 };
 
 blessed.colors.vcolors = ansi256.map((entry) => entry.hex);
+
 blessed.colors.colors = ansi256.map((entry) => entry.rgb);
 
 blessed.colors.reduce = function (color) {
     return color;
 };
 
-// Blend function from XTerm source
+// modified blend function from https://github.com/xtermjs/xterm.js/blob/376b29673ba174934b1b6339ef3eed8449fec529/src/browser/Color.ts
 blessed.colors.blend = memoize(
     (fg = 15, bg = 0, alpha = 0.5) => {
         if (badOrDefault(fg)) {

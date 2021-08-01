@@ -1226,6 +1226,8 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         }
     });
 
+    let destroyTimeout;
+
     const close = () => {
         screen.userClose = true;
         screen.program.closing = true;
@@ -1254,13 +1256,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         });
 
         screen.render();
-
-        const destroyTimeout = setTimeout(() => {
-            screen.destroy();
-            process.stdout.write('\x1b[?25h');
-            process.stdout.write(ansiEscapes.clearTerminal);
-            process.exit(0);
-        }, 5000);
 
         setTimeout(() => {
             screen.render();
@@ -1306,7 +1301,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             }
 
             setTimeout(() => {
-                clearTimeout(destroyTimeout);
                 screen.destroy();
                 process.stdout.write('\x1b[?25h');
                 process.stdout.write(ansiEscapes.clearTerminal);
