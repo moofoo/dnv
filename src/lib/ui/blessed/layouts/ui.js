@@ -569,7 +569,7 @@ class UI extends Grid {
         let x = 0;
 
         for (const child of this.children) {
-            let { key, tabLabel, label } = this.options.items[x];
+            let { key, tabLabel, label, page } = this.options.items[x];
 
             if (!key) {
                 key = label;
@@ -610,7 +610,16 @@ class UI extends Grid {
                 mouse: true,
                 text: ` ${tabLabel} `,
                 callback: () => {
-                    this.focusItem(child);
+                    if (child.page !== this.currentPage) {
+                        this.showPage(page);
+
+                        setTimeout(() => {
+                            this.focusItem(child);
+                            child.focus();
+                        }, 15);
+                    } else {
+                        this.focusItem(child);
+                    }
                 },
             });
 

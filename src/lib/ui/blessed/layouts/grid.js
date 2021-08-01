@@ -104,7 +104,8 @@ class Grid extends blessed.Box {
     }
 
     set focusedIndex(value) {
-        const index = this.getItemIndex(value);
+        const index =
+            typeof value === 'number' ? value : this.getItemIndex(value);
 
         this.focusedIndexOnPage[this.currentPage] = index;
     }
@@ -200,6 +201,8 @@ class Grid extends blessed.Box {
         let el = new Widget(opts);
 
         el.key = opts.key;
+
+        el.page = opts.page;
 
         if (opts.row === 0 && opts.atop) {
             el.atop = opts.atop;
@@ -1078,7 +1081,7 @@ class Grid extends blessed.Box {
         });
     }
 
-    showPage(page, cb) {
+    showPage(page, cb, focusItem = true) {
         let change = false;
 
         this.debug(`current page ${this.currentPage} new page ${page}`);
@@ -1105,9 +1108,15 @@ class Grid extends blessed.Box {
             }
         });
 
-        if (change) {
-            this.focusItem(this.focusedIndex);
-            this.getItem(this.focusedIndex).focus();
+        if (change && focusItem) {
+            if (typeof focusItem === 'boolean') {
+                this.focusItem(this.focusedIndex);
+                this.getItem(this.focusedIndex).focus();
+            } else {
+                this.focusedIndex = focusItem.options.gridIndex;
+                this.focusItem(focusItem);
+                this.getItem(focusItem).focus();
+            }
         }
 
         this.emit('show page', this.currentPage);

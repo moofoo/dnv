@@ -546,7 +546,7 @@ class PanelBase extends blessed.Box {
                             }
                         }
                     }
-                }, 50);
+                }, 5);
             } else if (
                 this.activeItem &&
                 !this.switching &&
