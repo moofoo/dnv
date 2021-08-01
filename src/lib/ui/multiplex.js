@@ -93,7 +93,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
     let items = [];
     const containerService = {};
-
+    /*
     items.push({
         termType: 'base',
         prettyprint: true,
@@ -105,7 +105,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             bg: 'black',
         },
     });
-
+*/
     const getWatchCount = () => {
         let watchingCount = 0;
         let watchingShort = [];
