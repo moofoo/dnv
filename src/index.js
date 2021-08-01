@@ -8,8 +8,6 @@ const main = async () => {
 
     await config.setup();
 
-    config.isOnline = true;
-
     if (!config.dockerRunning || !config.isOnline) {
         const chalk = require('chalk');
         const logSymbols = require('log-symbols');
