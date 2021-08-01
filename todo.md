@@ -13,4 +13,6 @@
     -   Is this really a needed feature? (The 'feature', more specifically, being DNV generating the Dockerfile and docker-compose.yml).
     -   Such a setup. with a pre-existing Dockerfile / docker-compose.yml, **should** still work, absent those prompts. Need to verify this.
 
-- yarn 3.0 support
+-   yarn 3.0 support
+
+-   So, grid layout is apparently wonky when there's more than one page of services (4 per page). Getting tired of plugging leaky holes with the grid widget, thinking of implementing an autolayout-based thing.
