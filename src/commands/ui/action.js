@@ -21,6 +21,7 @@ const {
     recordUpdate,
 } = require('../up/action');
 
+let container;
 let box;
 let progress;
 let screen;
@@ -106,8 +107,21 @@ const initBlessed = (opts = {}) => {
         colors: ['black', 'blue'],
     });
 
-    box = blessed.box({
+    container = blessed.box({
         parent: screen,
+        screen,
+        width: '100%',
+        height: '100%',
+        top: 0,
+        left: 0,
+        style: {
+            bg: 0,
+        },
+    });
+
+    box = blessed.box({
+        parent: container,
+        screen,
         content: prettyFont.string,
         width: 72,
         height: 12,

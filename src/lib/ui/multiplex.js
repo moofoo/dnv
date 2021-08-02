@@ -972,6 +972,13 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                             return;
                                         }
 
+                                        if (category !== 'shell' && !hasArgs) {
+                                            cmd =
+                                                category === 'npm'
+                                                    ? `${category} run ${cmd}`
+                                                    : `${category} ${cmd}`;
+                                        }
+
                                         cleanProcs = true;
 
                                         const command = `docker exec -it -e ${execEnvironment.join(

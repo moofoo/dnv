@@ -89,12 +89,17 @@ class PanelGrid {
         }.bind(item);
 
         item.gridFocus = function () {
+            this.border = this.border || {};
+            this.style.boder = this.style.border || {};
+
             this.border.type = 'heavy';
             this.style.border.type = 'heavy';
             this.screen.render();
         }.bind(item);
 
         item.gridBlur = function () {
+            this.border = this.border || {};
+            this.style.boder = this.style.border || {};
             this.border.type = 'line';
             this.style.border.type = 'line';
             this.screen.render();

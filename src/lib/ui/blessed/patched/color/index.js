@@ -95,8 +95,7 @@ blessed.colors.isXterm = (color, layer = 'fg') => {
                 layer === 'fg'
                     ? AttributeData.isFgPalette(color) ||
                       AttributeData.isFgRGB(color)
-                    : AttributeData.isBgPalette(color) ||
-                      AttributeData.isBgRGB(color);
+                    : AttributeData.isBgPalette(color);
         }
     } else {
         isXterm = false;
