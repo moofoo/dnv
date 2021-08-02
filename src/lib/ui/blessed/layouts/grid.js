@@ -1447,6 +1447,9 @@ class Grid extends blessed.Box {
     }
 
     debug(text, clear = false, diff = false) {
+        if (1 === 1) {
+            return;
+        }
         if (this.parent !== this.screen && this.parent.debug) {
             this.parent.debug(text, clear, diff);
             return;
