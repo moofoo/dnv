@@ -88,9 +88,22 @@ class PanelGrid {
             return fg;
         }.bind(item);
 
-        item.style.border.type = function () {
-            return this.focused ? 'heavy' : 'light';
+        item.gridFocus = function () {
+            this.border.type = 'heavy';
+            this.style.border.type = 'heavy';
+            this.screen.render();
         }.bind(item);
+
+        item.gridBlur = function () {
+            this.border.type = 'line';
+            this.style.border.type = 'line';
+            this.screen.render();
+        }.bind(item);
+
+        item.on('focus', item.gridFocus);
+        item.on('blur', item.gridBlur);
+
+        item.style.border.type = function () {}.bind(item);
 
         item.border.fg = item.style.border.fg;
         item.border.type = item.style.border.type;
@@ -469,6 +482,9 @@ class PanelGrid {
 
             this.updateLabels();
             this.prepGridItems();
+
+            this.activeItem.border.type = 'heavy';
+            this.activeItem.style.border.type = 'heavy';
         }
 
         resize();
@@ -496,6 +512,10 @@ class PanelGrid {
         item.position.left = 0;
         item.position.height = '100%-2';
         item.style.border = {};
+
+        item.off('focus', item.gridFocus);
+
+        item.off('blur', item.gridBlur);
 
         item.border = null;
 

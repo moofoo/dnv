@@ -65,8 +65,10 @@ class TerminalProcessType {
                 debounce(
                     () => {
                         const scrollPerc = this.getScrollPerc();
+
                         const oldUnseenLine =
                             this.lineState.unseenLine || false;
+
                         const oldUnseenProblem =
                             this.lineState.unseenProblem || false;
 
@@ -76,8 +78,10 @@ class TerminalProcessType {
                         }
 
                         if (
-                            oldUnseenLine !== this.lineState.unseenLine ||
-                            oldUnseenProblem !== this.lineState.unseenProblem
+                            oldUnseenLine !==
+                                (this.lineState.unseenLine || false) ||
+                            oldUnseenProblem !==
+                                (this.lineState.unseenProblem || false)
                         ) {
                             this.lineStateChange();
                         }

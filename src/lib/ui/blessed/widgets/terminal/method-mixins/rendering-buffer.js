@@ -32,7 +32,9 @@ class RenderingAndBuffer {
         } else if (!this.hidden) {
             const ret = this.render(true);
 
-            if (full) {
+            if (!ret) {
+                this.screen.render();
+            } else if (full) {
                 this.screen.draw(ret.yi + this.itop, ret.yl - this.ibottom);
             } else {
                 this.screen.draw(this.filthyTop, this.filthyBottom);

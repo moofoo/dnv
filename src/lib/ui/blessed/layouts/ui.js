@@ -88,9 +88,7 @@ class UI extends Grid {
                 heightSign,
                 parentHeight,
             }) => {
-                if (row > 0 && parentHeight % 2 !== 0) {
-                    return `${Math.ceil(height * rowSpan)}%`;
-                } else {
+                if (row === 0 || (row > 0 && parentHeight % 2 !== 0)) {
                     return `${Math.ceil(height * rowSpan)}%${heightSign}${
                         heightOffset !== 0 ? Math.abs(heightOffset) : ''
                     }`;
@@ -594,7 +592,9 @@ class UI extends Grid {
                 this.listBar.add({
                     text: `Pg ${currentPage + 1}`,
                     callback: () => {
-                        this.showPage(currentPage);
+                        if (currentPage !== this.currentPage) {
+                            this.showPage(currentPage);
+                        }
                     },
                 });
 
@@ -611,12 +611,10 @@ class UI extends Grid {
                 text: ` ${tabLabel} `,
                 callback: () => {
                     if (child.page !== this.currentPage) {
-                        this.showPage(page);
+                        this.focusedIndexOnPage[child.page] =
+                            child.options.gridIndex;
 
-                        setTimeout(() => {
-                            this.focusItem(child);
-                            child.focus();
-                        }, 15);
+                        this.showPage(child.page);
                     } else {
                         this.focusItem(child);
                     }

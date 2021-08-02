@@ -2,6 +2,7 @@ const CFonts = require('cfonts');
 const pWaterfall = require('p-waterfall');
 const chalk = require('chalk');
 const os = require('os');
+const debounce = require('lodash.debounce');
 
 const { error } = require('../../lib/text');
 const { config } = require('../../lib/config');
@@ -66,6 +67,32 @@ const initBlessed = (opts = {}) => {
             bg: 0,
         },
     });
+
+    let preResizing = false;
+
+    screen.program.on(
+        'pre-resize',
+        debounce(
+            (cb) => {
+                if (!preResizing) {
+                    preResizing = true;
+
+                    (function emit(el) {
+                        if (el.preResize) {
+                            el.preResize();
+                        }
+                        el.children.forEach(emit);
+                    })(screen);
+
+                    cb();
+
+                    preResizing = false;
+                }
+            },
+            100,
+            { trailing: true }
+        )
+    );
 
     screen.ignoreLocked = ['C-c'];
 

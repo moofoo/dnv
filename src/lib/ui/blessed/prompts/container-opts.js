@@ -25,11 +25,16 @@ class ContainerOpts extends blessed.List {
                 focused: false,
                 loop: true,
                 border: {
-                    type: 'line',
+                    type: 'lightDouble',
                     fg: 'cyan',
                     bg: 'black',
                 },
                 style: {
+                    border: {
+                        type: 'lightDouble',
+                        fg: 'cyan',
+                        bg: 'black',
+                    },
                     label: {
                         fg: '#fdff92',
                     },

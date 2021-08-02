@@ -1186,32 +1186,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         }
     );
 
-    let preResizing = false;
-
-    screen.program.on(
-        'pre-resize',
-        debounce(
-            (cb) => {
-                if (!preResizing) {
-                    preResizing = true;
-
-                    (function emit(el) {
-                        if (el.preResize) {
-                            el.preResize();
-                        }
-                        el.children.forEach(emit);
-                    })(screen);
-
-                    cb();
-
-                    preResizing = false;
-                }
-            },
-            100,
-            { trailing: true }
-        )
-    );
-
     screen.unkey('C-c');
 
     screen.key('f9', () => {
@@ -1244,12 +1218,23 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
             align: 'left',
             content: 'Shutting down...',
             border: {
-                type: 'line',
+                type: 'double,',
                 fg: 'brightblue',
+                bottom: true,
+                left: true,
+                right: true,
+                top: true,
             },
             style: {
+                border: {
+                    type: 'double',
+                    fg: 'brightblue',
+                    bottom: true,
+                    left: true,
+                    right: true,
+                    top: true,
+                },
                 fg: 'brightcyan',
-                shadow: true,
             },
         });
 

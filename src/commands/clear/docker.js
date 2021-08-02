@@ -20,8 +20,8 @@ const docker = async (
     let keys = [pathKey];
 
     if (!pathKey && Object.keys(configs).length) {
-        const projects = await project();
-        keys = projects.map((proj) => proj.pathKey);
+        const proj = await project();
+        keys = [proj.pathKey]; //projects.map((proj) => proj.pathKey);
     }
 
     if (force) {

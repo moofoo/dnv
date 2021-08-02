@@ -200,7 +200,7 @@ class ComposeParseHelpers {
                 if (managerFiles.dot.host.includes('.yarnrc.yml')) {
                     const rcJson = YAMLJS.parse(
                         fs.readFileSync(managerFiles.dot.host, 'utf8')
-                    ); // jsyaml.load(fs.readFileSync(managerFiles.dot.host, 'utf8'));
+                    );
 
                     if (rcJson.nodeLinker === 'node-modules') {
                         service.modulesDir = working_dir + '/node_modules';

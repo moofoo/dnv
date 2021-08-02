@@ -31,11 +31,16 @@ class CmdList extends blessed.List {
                     style: { bg: 'white' },
                 },*/
                 border: {
-                    type: 'line',
+                    type: 'lightDouble',
                     fg: 'cyan',
                     bg: 'black',
                 },
                 style: {
+                    border: {
+                        type: 'lightDouble',
+                        fg: 'cyan',
+                        bg: 'black',
+                    },
                     label: {
                         fg: '#fdff92',
                     },

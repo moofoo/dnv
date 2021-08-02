@@ -298,7 +298,7 @@ If you choose 'yes' for the `External Volume` option during project initializati
 
 #### What does this mean?
 
-Well, `docker-compose up` won't build images for your Node containers from the Dockerfile(s), since the container file system is just the contents of your project directory plus the dependency directory (node_modules or .yarn), and DNV manages that. Consequently, changing dependencies for your project doesn't require rebuilding an image, so that's quick and painless.
+Primarily, it means it's not necessary to build container images for your Node services. Instead, the container file system will just be the base Node image, the contents of your project directory (bind mounted), plus the dependency directory (mounted as an external volume over the bind mount). Consequently, changing dependencies for your project doesn't require rebuilding an image (re-downloading ALL dependencies), so that's quick and painless.
 
 #### How does DNV work if I don't use the external volume option?
 

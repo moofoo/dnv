@@ -38,6 +38,8 @@ class Grid extends blessed.Box {
         let page = 0;
         let x = 0;
 
+        this.focusedIndexOnPage = { 0: 0 };
+
         for (const item of this.items) {
             item.page = page;
             item.id = `${Math.floor(Math.random() * (9999 - 1001) + 1000)}`;
@@ -46,14 +48,13 @@ class Grid extends blessed.Box {
 
             if (x % this.options.perPage === 0) {
                 page++;
+                this.focusedIndexOnPage[page] = null;
             }
         }
 
         this.processKeys = options.processKeys;
 
         this.label = this.options.label;
-
-        this.focusedIndexOnPage = { 0: 0 };
 
         this.debug = this.debug.bind(this);
 
@@ -659,11 +660,13 @@ class Grid extends blessed.Box {
 
                 this.itemMap.push([...pageMap]);
 
-                this.focusedIndexOnPage[currentPage] = index;
-
                 currentCol = 0;
                 currentRow = 0;
             }
+
+            const itemsOnPage = this.items.filter(
+                (item) => item.page === currentPage
+            ).length;
 
             if (row === null) {
                 row = currentRow;
@@ -677,8 +680,6 @@ class Grid extends blessed.Box {
             rowSpan = 1;
 
             if (newPage) {
-                cols = 1;
-                rows = 2;
                 startCols = 1;
             } else {
                 if (colSpans[row]) {
@@ -705,6 +706,17 @@ class Grid extends blessed.Box {
                     cols = startCols;
                     colSpan = 1;
                 }
+            }
+
+            if (itemsOnPage === 1) {
+                cols = 1;
+                rows = 1;
+            } else if (itemsOnPage === 2) {
+                cols = 1;
+                rows = 2;
+            } else {
+                cols = itemsOnPage >= 2 ? 2 : 1;
+                rows = itemsOnPage >= 3 ? 2 : 1;
             }
 
             if (!this.itemMap[currentPage][row]) {
@@ -1094,6 +1106,14 @@ class Grid extends blessed.Box {
             this.currentPage = page;
         }
 
+        if (this.focusedIndexOnPage[this.currentPage] === null) {
+            const onPage = this.children.filter((child) => child.page === page);
+            if (onPage.length) {
+                this.focusedIndexOnPage[this.currentPage] =
+                    onPage[0].options.gridIndex;
+            }
+        }
+
         this.children.forEach((child) => {
             if (child.options.page === this.currentPage) {
                 if (!cb || (cb && cb(child))) {
@@ -1108,14 +1128,16 @@ class Grid extends blessed.Box {
             }
         });
 
-        if (change && focusItem) {
-            if (typeof focusItem === 'boolean') {
-                this.focusItem(this.focusedIndex);
-                this.getItem(this.focusedIndex).focus();
-            } else {
-                this.focusedIndex = focusItem.options.gridIndex;
-                this.focusItem(focusItem);
-                this.getItem(focusItem).focus();
+        if (change) {
+            if (focusItem) {
+                if (typeof focusItem === 'boolean') {
+                    this.focusItem(this.focusedIndex);
+                    this.getItem(this.focusedIndex).focus();
+                } else {
+                    this.focusedIndex = focusItem.options.gridIndex;
+                    this.focusItem(focusItem);
+                    focusItem.focus();
+                }
             }
         }
 
@@ -1425,9 +1447,6 @@ class Grid extends blessed.Box {
     }
 
     debug(text, clear = false, diff = false) {
-        if (1 === 1) {
-            return;
-        }
         if (this.parent !== this.screen && this.parent.debug) {
             this.parent.debug(text, clear, diff);
             return;

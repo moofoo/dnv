@@ -132,6 +132,7 @@ class SelectionService extends Disposable {
         this.lastEvent = null;
         this.eventsAdded = false;
         this.disposed = false;
+        this.timing = false;
 
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -432,7 +433,16 @@ class SelectionService extends Disposable {
                 this._onTripleClick(event);
             }
 
-            this._addMouseDownListeners(event);
+            if (this.timing) {
+                return;
+            }
+
+            setTimeout(() => {
+                this.timing = false;
+                this._addMouseDownListeners(event);
+            }, 100);
+
+            this.timing = true;
         }
 
         this.refresh();
@@ -445,6 +455,7 @@ class SelectionService extends Disposable {
         // Listen on the document so that dragging outside of viewport works
         if (
             this._screenElement.ownerDocument &&
+            this._screenElement.ownerDocument.mouseDown &&
             event.inside &&
             !this.eventsAdded
         ) {

@@ -560,6 +560,10 @@ blessed.Element.prototype.render = function (renderContent = true) {
         (this.border && this.border.type) ||
         (this.style.border && this.style.border.type)
     ) {
+        if (this.style.border && !this.border) {
+            this.border = this.style.border;
+        }
+
         type = this.style.border ? this.style.border.type : this.border.type;
 
         boxStyle = boxStyles[type];
@@ -571,7 +575,7 @@ blessed.Element.prototype.render = function (renderContent = true) {
 
     coords.notop = false;
     if (this.border && this.noBorder !== true) {
-        battr = this.sattr(this.style.border);
+        battr = this.sattr(this.style.border || this);
 
         const originalAttr = battr;
 

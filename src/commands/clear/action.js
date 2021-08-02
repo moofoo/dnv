@@ -30,6 +30,8 @@ const clearAction = async function (opts = {}) {
 
         if (files.fileExists('.pnp.js')) {
             files.deleteFile('.pnp.js');
+        } else if (files.fileExists('.pnp.cjs')) {
+            files.deleteFile('.pnp.cjs');
         }
 
         if (files.fileExists('yarn.lock')) {

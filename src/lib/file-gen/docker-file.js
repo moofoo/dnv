@@ -564,7 +564,7 @@ class DockerFile {
         if (packageManager === 'yarn') {
             if (fs.existsSync(`${cwd}/.yarnrc.yml`)) {
                 copy =
-                    'COPY ["package.json", "yarn.lock*", ".yarnrc.yml*", ".pnp.js*", "./"]\n\n';
+                    'COPY ["package.json", "yarn.lock*", ".yarnrc.yml*",".pnp.cjs*", ".pnp.js*", "./"]\n\n';
 
                 if (fs.existsSync(`${cwd}/.yarn`)) {
                     copy += `COPY ./.yarn/releases ${workingDir}/.yarn/releases\n\n`;

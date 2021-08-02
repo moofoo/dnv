@@ -81,9 +81,22 @@ class CopyPrompt {
             width,
             height,
             border: {
-                type: 'line',
+                type: 'double,',
                 fg: 'brightblue',
-                bg: 'black',
+                bottom: true,
+                left: true,
+                right: true,
+                top: true,
+            },
+            style: {
+                border: {
+                    type: 'double',
+                    fg: 'brightblue',
+                    bottom: true,
+                    left: true,
+                    right: true,
+                    top: true,
+                },
             },
 
             padding: {
