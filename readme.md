@@ -72,7 +72,7 @@ DNV works behind the scenes to keep dependencies in your Docker container in-syn
 It also comes with a custom made, featureful ncurses-like UI designed
 for use when developing apps using Docker Compose.
 
-![terminal](https://user-images.githubusercontent.com/13556/126150865-196c4a88-ba0e-46d5-a7aa-cf73d5fbb625.png)
+[![DNV Showcase using asciinema](https://asciinema.org/a/428539.svg)](https://asciinema.org/a/428539)
 
 ## Basic Usage
 
