@@ -91,7 +91,6 @@
         "strip-ansi": "^6.0.0",
         "xterm": "^4.12.0",
         "xterm-addon-unicode11": "^0.2.0",
-        "yamljs": "^0.3.0",
-        "yoga-layout-prebuilt": "^1.10.0"
+        "yamljs": "^0.3.0"
     }
 }
