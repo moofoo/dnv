@@ -45,7 +45,10 @@ class ProcessStat {
                 rss = 0;
             }
         } else {
-            if ((isNaN(memUsage.heapUsed) || memUsage.heapUsed <= 0) && this._lastUsed !== null) {
+            if (
+                (isNaN(memUsage.heapUsed) || memUsage.heapUsed <= 0) &&
+                this._lastUsed !== null
+            ) {
                 heapUsed = this._lastUsed;
             } else {
                 heapUsed = memUsage.heapUsed;
@@ -60,7 +63,10 @@ class ProcessStat {
                 heapTotal = memUsage.heapTotal;
             }
 
-            if ((isNaN(memUsage.rss) || memUsage.rss <= 0) && this._lastRss !== null) {
+            if (
+                (isNaN(memUsage.rss) || memUsage.rss <= 0) &&
+                this._lastRss !== null
+            ) {
                 rss = this._lastRss;
             } else {
                 rss = memUsage.rss;
@@ -89,7 +95,10 @@ class ProcessStat {
     _getHandles() {
         let activeHandles = process._getActiveHandles();
 
-        if ((!activeHandles || activeHandles.length === 0) && this._lastHandles !== null) {
+        if (
+            (!activeHandles || activeHandles.length === 0) &&
+            this._lastHandles !== null
+        ) {
             activeHandles = this._lastHandles;
         } else {
             activeHandles = activeHandles.length;
@@ -120,7 +129,8 @@ class ProcessStat {
 
     _sampleCpuUsage(elapsedTime) {
         const elapsedCpuUsage = process.cpuUsage(this._lastSampleCpuUsage);
-        const elapsedCpuUsageTotal = (elapsedCpuUsage.user + elapsedCpuUsage.system) / 1000;
+        const elapsedCpuUsageTotal =
+            (elapsedCpuUsage.user + elapsedCpuUsage.system) / 1000;
 
         return elapsedCpuUsageTotal / elapsedTime;
     }
@@ -171,10 +181,14 @@ if (process.env.STATS_PORT) {
         }
 
         const saveSample = () => {
-            const sample = processStat.sample();
-            socket.write(JSON.stringify(sample));
-            processStat.refresh();
-            scheduleSample();
+            let sample;
+
+            if (!socket.destroyed && socket.writable) {
+                sample = processStat.sample();
+                socket.write(JSON.stringify(sample));
+                processStat.refresh();
+                scheduleSample();
+            }
         };
 
         setTimeout(() => {

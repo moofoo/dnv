@@ -5,6 +5,8 @@ const parseCommand = require('../util/parse-command');
 const MuteStream = require('mute-stream');
 const destroy = require('destroy');
 
+const debounce = require('lodash.debounce');
+
 const { emitKeypressEvents } = require('../../../patched/keys');
 const { Buffer } = require('buffer');
 
@@ -33,7 +35,10 @@ class TerminalShellType {
 
             this.stdin.setDefaultEncoding('utf-8');
 
-            this.input = this.input.bind(this);
+            this.input = debounce(this.input, 5, {
+                leading: true,
+                trailing: true,
+            });
 
             this.inactiveOk = false;
 
@@ -58,12 +63,14 @@ class TerminalShellType {
             this.lastCommand = '';
             this.lastArguments = '';
 
-            this.on('term write', (data) => {
-                if (this.checkInput > 0) {
-                    this.checkInput--;
-                    this.updateInputLine(data);
-                }
-            });
+            if (this.options.termType === 'shell') {
+                this.on('term write', (data) => {
+                    if (this.checkInput > 0) {
+                        this.checkInput--;
+                        this.updateInputLine(data);
+                    }
+                });
+            }
 
             this.on('focus', () => {
                 setTimeout(() => this.shellStdinToggle(true));
@@ -170,10 +177,11 @@ class TerminalShellType {
     }
 
     set cursorBlinking(value) {
-        if (this.options.cursorBlink) {
-            if (this.cursorBlinkTimeout) {
-                clearInterval(this.cursorBlinkTimeout);
-            }
+        if (
+            this.options.cursorBlink &&
+            (!this._cursorBlinkOn || !this.cursorBlinkTimeout)
+        ) {
+            clearInterval(this.cursorBlinkTimeout);
 
             if (value) {
                 this.cursorBlinkTimeout = setInterval(() => {
@@ -656,7 +664,9 @@ class TerminalShellType {
                         this._returnPressed = false;
                     }
 
-                    this.setScrollPerc(100);
+                    if (this.options.termType !== 'program') {
+                        this.setScrollPerc(100);
+                    }
 
                     if (key.sequence) {
                         this.pty.write(key.sequence);
@@ -778,7 +788,7 @@ class TerminalShellType {
 
                     if (multichar) {
                         const parts = inputLine.split(multichar);
-                        parsed = [parts[parts.length - 1]].trim();
+                        parsed = parts[parts.length - 1].trim();
                     }
 
                     let command = '';
