@@ -74,7 +74,7 @@ for use when developing apps using Docker Compose.
 
 ![terminal](https://user-images.githubusercontent.com/13556/126150865-196c4a88-ba0e-46d5-a7aa-cf73d5fbb625.png)
 
-[![DNV Showcase using asciinema](https://asciinema.org/a/428539.svg)](https://asciinema.org/a/428539)
+[![DNV Showcase using asciinema](https://asciinema.org/a/Fertl1PbzEX93o8GQxDAgEL23.svg)](https://asciinema.org/a/Fertl1PbzEX93o8GQxDAgEL23)
 
 ## Basic Usage
 
