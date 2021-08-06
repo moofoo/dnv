@@ -300,7 +300,9 @@ class CmdList extends blessed.List {
                 .flat();
         }
 
-        items = [...objs, ...results];
+        items = [...objs, ...results].filter((value, index, self) => {
+            return self.findIndex((itm) => itm.name === value.name) === index;
+        });
 
         if (this.options.disabled && this.options.disabled.length) {
             items = items.filter(
