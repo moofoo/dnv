@@ -55,7 +55,8 @@ class TerminalShellType {
                 options.shellType === 'script';
             this.lastInputLine = '';
 
-            this.lastCommand = [];
+            this.lastCommand = '';
+            this.lastArguments = '';
 
             this.on('term write', (data) => {
                 if (this.checkInput > 0) {
@@ -105,11 +106,10 @@ class TerminalShellType {
             this.on('shell program', () => {
                 if (
                     this.options.shellType !== 'repl' &&
-                    this.lastCommand &&
-                    this.lastCommand.length &&
+                    this.lastCommand !== '' &&
                     this.options.addToRecent
                 ) {
-                    this.options.addToRecent(this.lastCommand[0]);
+                    this.options.addToRecent(this.lastCommand);
                 }
             });
 
@@ -190,6 +190,32 @@ class TerminalShellType {
 
     get cursorBlinking() {
         return this._cursorBlinkOn;
+    }
+
+    get cursorX() {
+        return this._cursorX;
+    }
+
+    get cursorY() {
+        return this._cursorY;
+    }
+
+    set cursorX(value) {
+        const oldValue = this._cursorX;
+        this._cursorX = value;
+
+        if (oldValue !== value && this.options.showConsoleCursor) {
+            this.screen.program.cup(this.cursorY, this.cursorX);
+        }
+    }
+
+    set cursorY(value) {
+        const oldValue = this._cursorY;
+        this._cursorY = value;
+
+        if (oldValue !== value && this.options.showConsoleCursor) {
+            this.screen.program.cup(this.cursorY, this.cursorX);
+        }
     }
 
     pageKey(key, scroll) {
@@ -657,7 +683,7 @@ class TerminalShellType {
     }
 
     updateInputLine(data) {
-        if (this.options.termType === 'shell') {
+        if (this.term && this.options.termType === 'shell') {
             if (this.onCommandLine && this.commandLineLines.length) {
                 const buffer = this.term.buffer.active;
                 let line = '';
@@ -723,6 +749,9 @@ class TerminalShellType {
 
             if (hasPrompt) {
                 if (entry) {
+                    this.lastCommand = '';
+                    this.lastArguments = '';
+
                     if (
                         /yarn|pnpm|npm|apt|apk/.test(inputLine) &&
                         / add | install | i | del | unintall | remove | purge| rm | r | un | unlink /.test(
@@ -734,36 +763,48 @@ class TerminalShellType {
                         this.lastInputLine = inputLine;
                     }
 
-                    let parts = [inputLine];
+                    let parsed = inputLine
+                        .replace(/\n/g, '')
+                        .replace(/\r/g, '')
+                        .trim();
+
+                    let multichar;
 
                     if (inputLine.includes('&&')) {
-                        parts = inputLine.split('&&');
+                        multichar = '&&';
+                    } else if (inputLine.includes(';')) {
+                        multichar = ';';
                     }
 
-                    let commands = [];
+                    if (multichar) {
+                        const parts = inputLine.split(multichar);
+                        parsed = [parts[parts.length - 1]].trim();
+                    }
 
-                    for (const part of parts) {
-                        let str = part;
-                        if (part.includes('-')) {
-                            str = part.slice(0, part.indexOf('-')).trim();
-                        }
+                    let command = '';
+                    let args = '';
 
-                        if (str.includes(' ')) {
-                            commands.concat(str.split(' '));
-                        } else {
-                            commands.push(str);
+                    if (parsed.includes(' ')) {
+                        const first = parsed.split(' ')[0];
+                        command = first;
+                        args = parsed.split(' ').slice(1).join(' ');
+                    } else {
+                        command = parsed;
+                    }
+
+                    for (const pkgMan of ['npm', 'yarn', 'apt', 'apk']) {
+                        if (command.includes(pkgMan)) {
+                            command = '';
+                            args = '';
                         }
                     }
 
-                    commands = commands
-                        .filter(
-                            (comm) =>
-                                !['npm', 'yarn', 'apt', 'apk'].includes(comm)
-                        )
-                        .map((comm) => comm.trim());
+                    if (command !== '') {
+                        this.lastCommand = command;
+                    }
 
-                    if (commands.length) {
-                        this.lastCommand = commands;
+                    if (args !== '') {
+                        this.lastArguments = args;
                     }
 
                     this.userInput = true;

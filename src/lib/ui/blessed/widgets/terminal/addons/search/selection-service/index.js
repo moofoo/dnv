@@ -307,10 +307,12 @@ class SelectionService extends Disposable {
     /**
      * Clears the current terminal selection.
      */
-    clearSelection() {
+    clearSelection(removeListeners = true) {
         this.lastEvent = null;
         this._model.clearSelection();
-        this._removeMouseDownListeners();
+        if (removeListeners) {
+            this._removeMouseDownListeners();
+        }
         this.refresh();
         this._onSelectionChange.fire();
     }
@@ -433,16 +435,7 @@ class SelectionService extends Disposable {
                 this._onTripleClick(event);
             }
 
-            if (this.timing) {
-                return;
-            }
-
-            setTimeout(() => {
-                this.timing = false;
-                this._addMouseDownListeners(event);
-            }, 100);
-
-            this.timing = true;
+            setTimeout(() => this._addMouseDownListeners(event));
         }
 
         this.refresh();
@@ -455,7 +448,8 @@ class SelectionService extends Disposable {
         // Listen on the document so that dragging outside of viewport works
         if (
             this._screenElement.ownerDocument &&
-            this._screenElement.ownerDocument.mouseDown &&
+            (this._screenElement.ownerDocument.mouseDown ||
+                this._screenElement.ownerDocument.dragging) &&
             event.inside &&
             !this.eventsAdded
         ) {
@@ -711,6 +705,96 @@ class SelectionService extends Disposable {
         }
     }
 
+    cursorToCoords(coords, convert = true, doRefresh = true, mod = [0, -1]) {
+        let x, y;
+
+        if (Array.isArray(coords)) {
+            [x, y] = coords;
+        } else if (typeof coords === 'object') {
+            if (coords.x || coords.y) {
+                [x, y] = [coords.x, coords.y];
+            } else if (coords.clientX || cooords.clientY) {
+                [x, y] = [coords.clientX, coords.clientY];
+            }
+        } else if (
+            typeof coords === 'string' &&
+            ['start', 'end'].includes(coords) &&
+            this.hasSelection
+        ) {
+            if (!this._model) {
+                return;
+            }
+
+            const { selectionStart, selectionEnd, selectionStartLength } =
+                this._model;
+
+            if (!selectionStart) {
+                return;
+            }
+
+            mod = [0, 0];
+
+            convert = false;
+
+            if (coords === 'start') {
+                [x, y] = selectionStart;
+            } else if (coords === 'end') {
+                if (selectionEnd && selectionEnd[1] !== selectionStart[1]) {
+                    [x, y] = selectionEnd;
+                } else if (selectionStartLength > 0) {
+                    [x, y] = [
+                        selectionStart[0] + selectionStartLength,
+                        selectionStart[1],
+                    ];
+                }
+            }
+        }
+
+        if (
+            this._bufferService.buffer.ybase ===
+            this._bufferService.buffer.ydisp
+        ) {
+            if (convert) {
+                [x, y] = this._mouseService.getCoords({
+                    clientX: x,
+                    clientY: y,
+                });
+            }
+
+            if (x === undefined || y === undefined) {
+                return;
+            }
+
+            x += mod[0];
+            y += mod[1];
+
+            const sequence = moveToCellSequence(
+                x,
+                y - this._bufferService.buffer.ydisp,
+                this._bufferService,
+                this._coreService.decPrivateModes.applicationCursorKeys,
+                this._screenElement.ownerDocument.shellProgram
+                    ? false
+                    : this._screenElement.ownerDocument.onCommandLine,
+                this._screenElement.ownerDocument.debug
+            );
+
+            this._screenElement.ownerDocument.onAltClick(sequence);
+
+            if (doRefresh) {
+                this.refresh();
+            }
+        }
+    }
+
+    cursorToSelectionStart() {
+        this.cursorToCoords('start');
+    }
+
+    cursorToSelectionEnd() {
+        this.cursorToCoords('end');
+    }
+
     _onMouseUp(event) {
         const timeElapsed = event.timeStamp - this._mouseDownTimeStamp;
 
@@ -722,37 +806,13 @@ class SelectionService extends Disposable {
 
         this.mouseDown = false;
 
-        if (
-            this._screenElement.ownerDocument.doAltClick &&
+        const altClickOk =
+            event.altKey &&
             this.selectionText.length <= 1 &&
-            timeElapsed < ALT_CLICK_MOVE_CURSOR_TIME &&
-            event.altKey
-        ) {
-            if (
-                this._bufferService.buffer.ybase ===
-                this._bufferService.buffer.ydisp
-            ) {
-                const coordinates = this._mouseService.getCoords(event);
+            timeElapsed < ALT_CLICK_MOVE_CURSOR_TIME;
 
-                if (
-                    coordinates &&
-                    coordinates[0] !== undefined &&
-                    coordinates[1] !== undefined
-                ) {
-                    const sequence = moveToCellSequence(
-                        coordinates[0],
-                        coordinates[1] - 1 - this._bufferService.buffer.ydisp,
-                        this._bufferService,
-                        this._coreService.decPrivateModes.applicationCursorKeys,
-                        this._screenElement.ownerDocument.shellProgram
-                            ? false
-                            : this._screenElement.ownerDocument.onCommandLine,
-                        this._screenElement.ownerDocument.debug
-                    );
-
-                    this._screenElement.ownerDocument.onAltClick(sequence);
-                }
-            }
+        if (this._screenElement.ownerDocument.doAltClick(event) && altClickOk) {
+            this.cursorToCoords(event, true, false);
         } else {
             this._fireEventIfSelectionChanged();
         }

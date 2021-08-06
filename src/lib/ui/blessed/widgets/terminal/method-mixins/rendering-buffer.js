@@ -2,7 +2,7 @@ let nullCell = null;
 let altCell = null;
 
 class RenderingAndBuffer {
-    termRender(all = false, full = false, noFull = false) {
+    termRender(all = false, full = false) {
         full = full | this.options.full;
 
         const refresh = this.refresh;
@@ -15,18 +15,17 @@ class RenderingAndBuffer {
             this.coords();
             this.screen.render();
         } else if (
-            !noFull &&
-            (all ||
-                refresh ||
-                this.mouseSelecting ||
-                this.popover ||
-                this.searchActive ||
-                this.promptOpen ||
-                !this.lpos ||
-                !this.active ||
-                !this.ready ||
-                (full && this.panelGrid) ||
-                (this.parent && !this.parent.lpos))
+            all ||
+            refresh ||
+            this.mouseSelecting ||
+            this.popover ||
+            this.searchActive ||
+            this.promptOpen ||
+            !this.lpos ||
+            !this.active ||
+            !this.ready ||
+            (full && this.panelGrid) ||
+            (this.parent && !this.parent.lpos)
         ) {
             this.fullRender();
         } else if (!this.hidden) {
@@ -219,10 +218,11 @@ class RenderingAndBuffer {
                 inverse = false;
                 underline = false;
 
+                const cursorFound =
+                    this.shell && x === cursorX && !this.options.hideCursor;
+
                 if (
-                    this.shell &&
-                    x === cursorX &&
-                    !this.options.hideCursor &&
+                    cursorFound &&
                     !foundCursor &&
                     !(termX === 0 && termY === 0)
                 ) {
@@ -242,21 +242,25 @@ class RenderingAndBuffer {
                             this._foundPrompt = true;
                         }
 
-                        if (
-                            !this.options.cursorBlink ||
-                            (this.options.cursorBlink && this.blinking)
-                        ) {
+                        if (!this.options.showConsoleCursor) {
                             if (
-                                this.options.cursorStyle === 'line' ||
-                                this.options.cursorStyle === 'bar'
+                                !this.options.cursorBlink ||
+                                (this.options.cursorBlink && this.blinking)
                             ) {
-                                ch = '\u2502';
-                            } else if (
-                                this.options.cursorStyle === 'underline'
-                            ) {
-                                underline = true;
-                            } else if (this.options.cursorStyle === 'block') {
-                                inverse = true;
+                                if (
+                                    this.options.cursorStyle === 'line' ||
+                                    this.options.cursorStyle === 'bar'
+                                ) {
+                                    ch = '\u2502';
+                                } else if (
+                                    this.options.cursorStyle === 'underline'
+                                ) {
+                                    underline = true;
+                                } else if (
+                                    this.options.cursorStyle === 'block'
+                                ) {
+                                    inverse = true;
+                                }
                             }
                         }
                     }

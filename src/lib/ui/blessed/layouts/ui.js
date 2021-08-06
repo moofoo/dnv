@@ -261,6 +261,13 @@ class UI extends Grid {
         this.oneMaximized = true;
         this.maximizedIndex = this.getItemIndex(key);
 
+        if (item.options.startTop === undefined) {
+            item.options.startTop = item.options.top || 0;
+            item.options.startLeft = item.options.left || 0;
+            item.options.startWidth = item.options.width;
+            item.options.startHeight = item.options.height;
+        }
+
         if (item.maximize) {
             item.itemMaximized = true;
             item.maximize({
@@ -304,17 +311,17 @@ class UI extends Grid {
 
             if (item.minimize) {
                 item.minimize({
-                    top: item.options.top,
-                    left: item.options.left,
-                    width: item.options.width,
-                    height: item.options.height,
+                    top: item.options.startTop,
+                    left: item.options.startLeft,
+                    width: item.options.startWidth,
+                    height: item.options.startHeight,
                     minimizer,
                 });
             } else {
-                item.top = item.options.top;
-                item.left = item.options.left;
-                item.width = item.options.width;
-                item.height = item.options.height;
+                item.top = item.options.startTop;
+                item.left = item.options.startLeft;
+                item.width = item.options.startWidth;
+                item.height = item.options.startHeight;
             }
 
             if (minimizer) {

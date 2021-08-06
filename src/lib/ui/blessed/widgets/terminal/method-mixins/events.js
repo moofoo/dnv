@@ -167,7 +167,6 @@ class TerminalEvents {
 
     initTerminalStateEvents() {
         this.on('resize', this.debouncedResize);
-
         this.on('attach', () => {
             this.lastParent = this.parent;
 
@@ -184,14 +183,6 @@ class TerminalEvents {
             if (!this.parent || !this.term) {
                 return;
             }
-
-            this.wheelAmount = 1;
-
-            try {
-                if (this.maximized && !this.panelGrid) {
-                    this.wheelAmount = 2;
-                }
-            } catch {}
 
             if (this.resizeOnFocus) {
                 this.resizeOnFocus = false;
@@ -214,7 +205,11 @@ class TerminalEvents {
             }
 
             setTimeout(() => {
-                if (this.screen.focused === this && this.search) {
+                if (
+                    this.screen.focused === this &&
+                    this.search &&
+                    !this.search._enabled
+                ) {
                     this.search.enable();
                 }
             }, 250);
@@ -231,17 +226,7 @@ class TerminalEvents {
                 if (this.mouseSelecting && !this.focused) {
                     this.clearSelection();
                 }
-            });
-
-            if (this.options.showConsoleCursor) {
-                this.hideCursor();
-
-                setTimeout(() => {
-                    if (this.screen.focused === this) {
-                        this.showCursor();
-                    }
-                }, 500);
-            }
+            }, 250);
 
             if (this.onBlurEvent) {
                 this.onBlurEvent(this);

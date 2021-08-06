@@ -30,6 +30,26 @@ class OwnerDocument {
         return this.screen.program.mouseDown;
     }
 
+    get dragging() {
+        return this.screen.program._dragging;
+    }
+
+    get visibleCursorProgram() {
+        if (!this.blessedTerm.shellProgram) {
+            return false;
+        }
+
+        if (this.blessedTerm.options.shellType === 'repl') {
+            return true;
+        }
+
+        if (this.blessedTerm.options.showConsoleCursor) {
+            return this.blessedTerm.showConsoleCursor;
+        }
+
+        return !this.blessedTerm.options.hideCursor;
+    }
+
     render() {
         this.blessedTerm.termRender(null, true);
     }
@@ -159,21 +179,57 @@ class OwnerDocument {
         };
     }
 
-    get key() {
-        if (this.blessedTerm.options.itemKey === 'main') {
-            return this.blessedTerm.options.key;
-        }
-
-        return this.blessedTerm.options.itemKey || this.blessedTerm.options.key;
-    }
-
     debug(txt, clear, diff) {
         if (this.blessedTerm && this.blessedTerm.parent) {
             this.blessedTerm.parent.debug(txt, clear, diff);
         }
     }
 
-    get doAltClick() {
+    doMouseSelect(event) {
+        if (this.blessedTerm.options.doMouseSelect !== undefined) {
+            if (typeof this.blessedTerm.options.doMouseSelect === 'boolean') {
+                return this.blessedTerm.options.doMouseSelect;
+            } else if (
+                typeof this.blessedTerm.options.doMouseSelect === 'function'
+            ) {
+                return this.blessedTerm.options.doMouseSelect(
+                    this.blessedTerm,
+                    event
+                );
+            }
+        }
+
+        return true;
+    }
+
+    doAltClick(event) {
+        let doAlt = event.altKey;
+
+        if (
+            this.blessedTerm.options.autoAltClick === true ||
+            (typeof this.blessedTerm.options.autoAltClick === 'function' &&
+                this.blessedTerm.options.autoAltClick(
+                    this.blessedTerm,
+                    event
+                ) === true)
+        ) {
+            doAlt = true;
+        }
+
+        if (!doAlt) {
+            return;
+        }
+
+        if (this.blessedTerm.options.doAltClick !== undefined) {
+            if (typeof this.blessedTerm.options.doAltClick === 'boolean') {
+                return this.blessedTerm.options.doAltClick;
+            } else if (
+                typeof this.blessedTerm.options.doAltClick === 'function'
+            ) {
+                return this.blessedTerm.options.doAltClick(this.blessedTerm);
+            }
+        }
+
         return (
             this.blessedTerm.writable &&
             this.blessedTerm.shell &&

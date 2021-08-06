@@ -98,6 +98,14 @@ class SearchAddon {
         }
     }
 
+    cursorToSelectionStart() {
+        this._terminal._core._selectionService.cursorToSelectionStart();
+    }
+
+    cursorToSelectionEnd() {
+        this._terminal._core._selectionService.cursorToSelectionEnd();
+    }
+
     findNext(term, searchOptions) {
         if (!this._terminal) {
             throw new Error('Cannot use addon until it has been loaded');

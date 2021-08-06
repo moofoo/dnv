@@ -81,16 +81,6 @@ class TerminalResizing {
     }
 
     resize(force = false) {
-        if (this.hidden) {
-            process.nextTick(() => {
-                this._resize(force);
-            });
-        } else {
-            this._resize(force);
-        }
-    }
-
-    _resize(force = false) {
         force = force || this.screen.program.resizing;
 
         if (!this.term || (this.resizing && !force)) {
@@ -154,14 +144,6 @@ class TerminalResizing {
                 this.resizingTimeout = null;
                 this.preResizing = false;
                 this.resizing = false;
-
-                this.wheelAmount = 1;
-
-                try {
-                    if (this.maximized && !this.panelGrid) {
-                        this.wheelAmount = 2;
-                    }
-                } catch {}
 
                 if (!this.hidden) {
                     this.resizeOnFocus = false;

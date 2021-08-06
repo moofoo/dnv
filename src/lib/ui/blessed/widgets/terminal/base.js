@@ -110,8 +110,6 @@ class XTerminal extends blessed.ScrollableBox {
             this.options.termType !== 'program' ||
             this.options.shellType === 'script';
 
-        this.wheelAmount = 1;
-
         this._cursorX = null;
         this._cursorY = null;
 
@@ -154,16 +152,10 @@ class XTerminal extends blessed.ScrollableBox {
 
         this.createTerm();
 
-        this.debouncedResize = debounce(
-            () => {
-                this.resize();
-            },
-            100,
-            {
-                leading: false,
-                trailing: true,
-            }
-        );
+        this.debouncedResize = debounce(this.resize.bind(this), 100, {
+            leading: false,
+            trailing: true,
+        });
 
         this.screenIgnoreLocked = [...this.screen.defIgnoreLocked];
 
@@ -209,87 +201,12 @@ class XTerminal extends blessed.ScrollableBox {
         this._clickable = value;
     }
 
-    get cursorAtOrigin() {
-        if (!this.term) {
-            return true;
+    get wheelAmount() {
+        if (this.maximized && !this.panelGrid) {
+            return 2;
         }
 
-        const buffer = this.term.buffer.active;
-
-        return buffer.cursorX === 0 && buffer.cursorY === 0;
-    }
-
-    get cursorVisible() {
-        if (!this.term || !this.shell || this.screen.focused !== this) {
-            return false;
-        }
-
-        const buffer = this.term.buffer.active;
-        const cursorX = buffer.cursorX;
-        const cursorY = buffer.cursorY;
-        const ydisp = buffer.viewportY;
-        const ybase = buffer.baseY;
-
-        if (
-            this.shellProgram &&
-            ((cursorX === 0 && cursorY === 0) ||
-                (cursorY >= this.rows - 1 &&
-                    (cursorX === 0 || cursorX >= this.cols - 2)))
-        ) {
-            return false;
-        }
-
-        if (this.options.termType === 'shell' && ydisp === ybase) {
-            return true;
-        }
-
-        const cursorBaseY = ybase + cursorY;
-
-        const viewportRelativeCursorY = cursorBaseY - ydisp;
-
-        if (
-            viewportRelativeCursorY < 0 ||
-            viewportRelativeCursorY >= this.rows - 1
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-
-    get cursorXtermPos() {
-        const buffer = this.serviceBuffer;
-
-        const y = buffer.y;
-        const x = buffer.x;
-
-        return { x, y };
-    }
-
-    get cursorX() {
-        return this._cursorX;
-    }
-
-    get cursorY() {
-        return this._cursorY;
-    }
-
-    set cursorX(value) {
-        const oldValue = this._cursorX;
-        this._cursorX = value;
-
-        if (oldValue !== value && this.options.showConsoleCursor) {
-            this.screen.program.cup(this.cursorY, this.cursorX);
-        }
-    }
-
-    set cursorY(value) {
-        const oldValue = this._cursorY;
-        this._cursorY = value;
-
-        if (oldValue !== value && this.options.showConsoleCursor) {
-            this.screen.program.cup(this.cursorY, this.cursorX);
-        }
+        return 1;
     }
 
     get mouseSelecting() {

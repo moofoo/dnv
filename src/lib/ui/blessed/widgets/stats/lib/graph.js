@@ -65,9 +65,20 @@ class Graph {
 
     resizeNode() {
         if (!this.node.detached) {
+            const vals = Object.values(this.series);
+
             this.node.resize();
-            this.node.setData(Object.values(this.series));
-            this.parent.fullRender();
+
+            if (this.lastLen !== vals.lenth) {
+                setTimeout(() => {
+                    this.node.setData(vals);
+                    this.parent.fullRender();
+                });
+            } else {
+                this.parent.fullRender();
+            }
+
+            this.lastLen = vals.length;
         }
     }
 

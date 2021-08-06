@@ -12,19 +12,24 @@ function Line(options) {
     options.unit = options.unit || '%';
     options.showNthLabel = options.showNthLabel || 1;
     options.style = options.style || {};
-    options.xLabelPadding = options.xLabelPadding !== undefined ? options.xLabelPadding : 5;
+    options.xLabelPadding =
+        options.xLabelPadding !== undefined ? options.xLabelPadding : 5;
     options.xPadding = options.xPadding !== undefined ? options.xPadding : 10;
     options.numYLabels = options.numYLabels || 5;
     options.legend = options.legend || {};
     options.wholeNumbersOnly = options.wholeNumbersOnly || false;
     options.minY = options.minY || 0;
-    options.yLabelPadding = options.yLabelPadding !== undefined ? options.yLabelPadding : 6;
+    options.yLabelPadding =
+        options.yLabelPadding !== undefined ? options.yLabelPadding : 6;
     options.yPadding = options.yPadding !== undefined ? options.yPadding : 8;
-    options.showXAxis = options.showXAxis !== undefined ? options.showXAxis : true;
+    options.showXAxis =
+        options.showXAxis !== undefined ? options.showXAxis : true;
     options.customLegends = options.customLegends || false;
 
-    options.widthOffset = options.widthOffset !== undefined ? options.widthOffset : 16;
-    options.heightOffset = options.heightOffset !== undefined ? options.heightOffset : 0; // options.showXAxis ? 8 : 4;
+    options.widthOffset =
+        options.widthOffset !== undefined ? options.widthOffset : 16;
+    options.heightOffset =
+        options.heightOffset !== undefined ? options.heightOffset : 0; // options.showXAxis ? 8 : 4;
 
     options.legendBorder = options.legendBorder || {
         type: 'line',
@@ -57,7 +62,10 @@ Line.prototype.type = 'line';
 Line.prototype.resize = function (data) {
     if (this.parent) {
         this.calcSize();
-        this._canvas = new InnerCanvas(this.canvasSize.width, this.canvasSize.height);
+        this._canvas = new InnerCanvas(
+            this.canvasSize.width,
+            this.canvasSize.height
+        );
         this.ctx = this._canvas.getContext();
     }
 };
@@ -93,7 +101,9 @@ Line.prototype.addLegend = function (data, legends) {
     }
 
     this.legend = blessed.box({
-        height: legends ? Object.keys(legends || {}).length + 2 : data.length + 2,
+        height: legends
+            ? Object.keys(legends || {}).length + 2
+            : data.length + 2,
         top: 0,
         shrink: true,
         left: this.width - legendWidth - 2,
@@ -112,7 +122,8 @@ Line.prototype.addLegend = function (data, legends) {
             if (color.includes('bright')) {
                 color = `bright-${color.replace('bright', '')}`;
             }
-            legendText += '{' + color + '-fg}' + title + '{/' + color + '-fg}\r\n';
+            legendText +=
+                '{' + color + '-fg}' + title + '{/' + color + '-fg}\r\n';
         });
 
         if (typeof legendText === 'string' && !legendText.includes('Object')) {
@@ -201,8 +212,16 @@ Line.prototype.setData = function (data) {
         return max;
     }
 
-    function formatYLabel(value, max, min, numLabels, wholeNumbersOnly, abbreviate) {
-        var fixed = max / numLabels < 1 && value != 0 && !wholeNumbersOnly ? 2 : 0;
+    function formatYLabel(
+        value,
+        max,
+        min,
+        numLabels,
+        wholeNumbersOnly,
+        abbreviate
+    ) {
+        var fixed =
+            max / numLabels < 1 && value != 0 && !wholeNumbersOnly ? 2 : 0;
         var res = value.toFixed(fixed);
         if (typeof abbreviate === 'function') {
             return abbreviate(res);
@@ -214,7 +233,8 @@ Line.prototype.setData = function (data) {
     var yLabelIncrement =
         ((this.options.unit === '%' ? 100 : getMaxY()) - this.options.minY) /
         this.options.numYLabels;
-    if (this.options.wholeNumbersOnly) yLabelIncrement = Math.floor(yLabelIncrement);
+    if (this.options.wholeNumbersOnly)
+        yLabelIncrement = Math.floor(yLabelIncrement);
 
     yLabelIncrement = Math.max(yLabelIncrement, 1); // should not be zero
 
@@ -224,7 +244,14 @@ Line.prototype.setData = function (data) {
         for (var i = min; i < maxY; i += yLabelIncrement) {
             maxLabel = Math.max(
                 maxLabel,
-                formatYLabel(i, maxY, min, numLabels, wholeNumbersOnly, abbreviate).length
+                formatYLabel(
+                    i,
+                    maxY,
+                    min,
+                    numLabels,
+                    wholeNumbersOnly,
+                    abbreviate
+                ).length
             );
         }
         return 2 * (maxLabel + 1);
@@ -259,14 +286,20 @@ Line.prototype.setData = function (data) {
     }
 
     function getXPixel(val) {
-        return ((self.canvasSize.width - xPadding) / labels.length) * val + xPadding * 1.0 + 2;
+        return (
+            ((self.canvasSize.width - xPadding) / labels.length) * val +
+            xPadding * 1.0 +
+            2
+        );
     }
 
     function getYPixel(val, minY, offset = 2, maxY) {
         var res =
             self.canvasSize.height -
             yPadding -
-            ((self.canvasSize.height - yPadding) / ((maxY || getMaxY()) - minY)) * (val - minY);
+            ((self.canvasSize.height - yPadding) /
+                ((maxY || getMaxY()) - minY)) *
+                (val - minY);
         res -= offset; //to separate the baseline and the data line to separate chars so canvas will show separate colors
         return res;
     }
@@ -353,7 +386,10 @@ Line.prototype.setData = function (data) {
 
     if (this.options.showXAxis) {
         for (var i = 0; i < labels.length; i += showNthLabel) {
-            if (getXPixel(i) + labels[i].length * 2 < this.canvasSize.width + 1) {
+            if (
+                getXPixel(i) + labels[i].length * 2 <
+                this.canvasSize.width + 1
+            ) {
                 c.fillText(
                     labels[i],
                     getXPixel(i),

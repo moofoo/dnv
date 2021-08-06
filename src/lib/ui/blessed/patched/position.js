@@ -82,20 +82,13 @@ blessed.Element.prototype._getHeight = function (get) {
     var height;
     var top;
     var expr;
-    try {
-        (parent = get
-            ? (this.options.positionParent || this.parent)._getPos()
-            : this.options.positionParent || this.parent),
-            (height = this.position.height),
-            top,
-            expr;
-    } catch (err) {
-        throw new Error(
-            `${this.options.key || this.options.itemKey} ${this.type} ${
-                err.message
-            }`
-        );
-    }
+
+    (parent = get
+        ? (this.options.positionParent || this.parent)._getPos()
+        : this.options.positionParent || this.parent),
+        (height = this.position.height),
+        top,
+        expr;
 
     if (typeof height === 'string') {
         if (height === 'half') height = '50%';
@@ -340,3 +333,37 @@ blessed.Element.prototype.__defineSetter__('abottom', function (val) {
     this.clearPos();
     return (this.position.bottom = val);
 });
+
+blessed.Element.prototype.setPos = function (newPos) {
+    let move = false;
+    let resize = false;
+
+    for (let [measure, val] of Object.entries(newPos)) {
+        if (this.position[measure] !== val) {
+            if (['top', 'left', 'bottom', 'right'].includes(measure)) {
+                move = true;
+            } else if (['width', 'height'].includes(measure)) {
+                resize = true;
+            }
+        }
+    }
+    if (move) {
+        this.emit('move');
+    }
+
+    if (resize) {
+        this.emit('resize');
+    }
+
+    this.clearPos();
+
+    for (let [measure, val] of Object.entries(newPos)) {
+        if (this.position[measure] === val) {
+            continue;
+        }
+
+        if (/^\d+$/.test(val)) val = +val;
+
+        this.position[measure] = val;
+    }
+};

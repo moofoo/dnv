@@ -891,7 +891,7 @@ class Grid extends blessed.Box {
 
             for (const child of this.children) {
                 if (child.resize) {
-                    child.resize(true);
+                    child.resize();
                 }
             }
 
@@ -1015,10 +1015,11 @@ class Grid extends blessed.Box {
             this.on('resize', this.debouncedResize);
         } else {
             this.on('focus', () => {
-                if (this.resizeOnFocus && this.parent) {
-                    const parent = this.parent;
-                    this.detach();
-                    parent.append(this);
+                if (this.resizeOnFocus) {
+                    this.emit('resize');
+
+                    this.recalc();
+
                     this.resizeOnFocus = false;
                 }
             });
@@ -1493,6 +1494,31 @@ class Grid extends blessed.Box {
                 d.setScrollPerc(100);
             }
         }
+    }
+
+    _getPos() {
+        var pos = this.lpos;
+
+        // assert.ok(pos);
+
+        if (pos) {
+            this.lastPos = pos;
+        } else if (this.lastPos) {
+            return this.lastPos;
+        }
+
+        if (pos && pos.aleft != null) return pos;
+
+        pos.aleft = pos.xi;
+        pos.atop = pos.yi;
+        pos.aright = this.screen.cols - pos.xl;
+        pos.abottom = this.screen.rows - pos.yl;
+        pos.width = pos.xl - pos.xi;
+        pos.height = pos.yl - pos.yi;
+
+        this.lastPos = pos;
+
+        return pos;
     }
 }
 

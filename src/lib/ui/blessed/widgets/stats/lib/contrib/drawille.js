@@ -91,7 +91,8 @@ Canvas.prototype.writeText = function (str, x, y) {
     var bg = exports.colors[this.fontBg];
     var fg = exports.colors[this.fontFg];
 
-    this.chars[coord] = '\033[3' + fg + 'm' + '\033[4' + bg + 'm' + this.chars[coord];
+    this.chars[coord] =
+        '\033[3' + fg + 'm' + '\033[4' + bg + 'm' + this.chars[coord];
     this.chars[coord + str.length - 1] += '\033[39m\033[49m';
 };
 

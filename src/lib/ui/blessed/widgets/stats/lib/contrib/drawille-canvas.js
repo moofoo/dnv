@@ -110,7 +110,12 @@ function getBgCode(color) {
 }
 
 function br(p1, p2) {
-    return bresenham(Math.floor(p1[0]), Math.floor(p1[1]), Math.floor(p2[0]), Math.floor(p2[1]));
+    return bresenham(
+        Math.floor(p1[0]),
+        Math.floor(p1[1]),
+        Math.floor(p2[0]),
+        Math.floor(p2[1])
+    );
 }
 
 function triangle(pa, pb, pc, f) {
@@ -143,7 +148,11 @@ function quad(m, x, y, w, h, f) {
     var p1 = vec2.transformMat2d(vec2.create(), vec2.fromValues(x, y), m);
     var p2 = vec2.transformMat2d(vec2.create(), vec2.fromValues(x + w, y), m);
     var p3 = vec2.transformMat2d(vec2.create(), vec2.fromValues(x, y + h), m);
-    var p4 = vec2.transformMat2d(vec2.create(), vec2.fromValues(x + w, y + h), m);
+    var p4 = vec2.transformMat2d(
+        vec2.create(),
+        vec2.fromValues(x + w, y + h),
+        m
+    );
     triangle(p1, p2, p3, f);
     triangle(p3, p2, p4, f);
 }
@@ -206,7 +215,13 @@ Context.prototype.stroke = function stroke() {
         var cur = this._currentPath[i];
         var nex = this._currentPath[i + 1];
         if (nex.stroke) {
-            bresenham(cur.point[0], cur.point[1], nex.point[0], nex.point[1], set);
+            bresenham(
+                cur.point[0],
+                cur.point[1],
+                nex.point[0],
+                nex.point[1],
+                set
+            );
         }
     }
 };
@@ -228,7 +243,11 @@ Context.prototype.lineTo = function lineTo(x, y) {
 };
 
 Context.prototype.fillText = function lineTo(str, x, y) {
-    var v = vec2.transformMat2d(vec2.create(), vec2.fromValues(x, y), this._matrix);
+    var v = vec2.transformMat2d(
+        vec2.create(),
+        vec2.fromValues(x, y),
+        this._matrix
+    );
     this._canvas.writeText(str, Math.floor(v[0]), Math.floor(v[1]));
 };
 
@@ -284,7 +303,11 @@ Canvas.prototype.frame = function frame(delimiter) {
             result.push(' ');
         } else {
             var colorCode = this.colors[i];
-            result.push(colorCode + String.fromCharCode(0x2800 + this.content[i]) + '\033[39m');
+            result.push(
+                colorCode +
+                    String.fromCharCode(0x2800 + this.content[i]) +
+                    '\033[39m'
+            );
             //result.push(String.fromCharCode(0x2800 + this.content[i]));
         }
     }

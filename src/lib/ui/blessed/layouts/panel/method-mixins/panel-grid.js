@@ -473,10 +473,12 @@ class PanelGrid {
             }
         }
 
-        this.position.width = width;
-        this.position.left = left;
-        this.position.top = top;
-        this.position.height = height;
+        this.setPos({
+            width,
+            left,
+            top,
+            height,
+        });
 
         this.gridActiveKeys = [];
 
@@ -512,10 +514,13 @@ class PanelGrid {
         item.panelGrid = false;
         item.maximized = false;
 
-        item.position.top = 0;
-        item.position.width = '100%-2';
-        item.position.left = 0;
-        item.position.height = '100%-2';
+        item.setPos({
+            width: '100%-2',
+            height: '100%-2',
+            left: 0,
+            top: 0,
+        });
+
         item.style.border = {};
 
         item.off('focus', item.gridFocus);
@@ -564,10 +569,12 @@ class PanelGrid {
             this.activeItem.preResize();
         }
 
-        this.position.width = width;
-        this.position.left = left;
-        this.position.top = top;
-        this.position.height = height;
+        this.setPos({
+            width,
+            left,
+            top,
+            height,
+        });
 
         this.noBorder = false;
 

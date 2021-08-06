@@ -223,12 +223,6 @@ class Stats extends blessed.Box {
     }
 
     initStatsEvents() {
-        this.on('hide', () => {
-            if (this.parent) {
-                this.parent.resizeOnFocus = true;
-            }
-        });
-
         this.on('wheelup', () => {
             if (this.doMouseEvent()) {
                 this.emit('zoomGraphs', -1);
