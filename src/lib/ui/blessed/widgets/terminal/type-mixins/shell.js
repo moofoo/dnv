@@ -110,7 +110,7 @@ class TerminalShellType {
                 this.pageKey(key, 100);
             });
 
-            this.on('shell program', () => {
+            /*   this.on('shell program', () => {
                 if (
                     this.options.shellType !== 'repl' &&
                     this.lastCommand !== '' &&
@@ -119,6 +119,7 @@ class TerminalShellType {
                     this.options.addToRecent(this.lastCommand);
                 }
             });
+            */
 
             this.inputActions = options.inputAction || [];
 

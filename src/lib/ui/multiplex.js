@@ -858,7 +858,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                         },
                                     ],
                                 });
-                            } else if (selected === 'recent') {
+                            } else if (selected === 'recent' && 1 === 2) {
                                 if (!panelActive) {
                                     return;
                                 }
