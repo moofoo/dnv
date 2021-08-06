@@ -273,7 +273,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                         containerItems = [short];
 
                         if (recentItems.length) {
-                            containerItems.push('recent');
+                            //         containerItems.push('recent');
                         }
 
                         containerItems.push('exec');
