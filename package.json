@@ -26,7 +26,8 @@
         "multiplexing",
         "docker",
         "compose",
-        "docker-compose"
+        "docker-compose",
+        "Blessed"
     ],
     "dependencies": {
         "aggregation": "^1.2.7",
