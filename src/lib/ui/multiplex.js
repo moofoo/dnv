@@ -94,18 +94,18 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
     let items = [];
     const containerService = {};
     /*
-    items.push({
-        termType: 'base',
-        prettyprint: true,
-        widget: BaseTerm,
-        key: 'debug',
-        label: 'debug',
-        style: {
-            fg: 'white',
-            bg: 'black',
-        },
-    });
-*/
+        items.push({
+            termType: 'base',
+            prettyprint: true,
+            widget: BaseTerm,
+            key: 'debug',
+            label: 'debug',
+            style: {
+                fg: 'white',
+                bg: 'black',
+            },
+        });
+    */
     const getWatchCount = () => {
         let watchingCount = 0;
         let watchingShort = [];
@@ -204,17 +204,15 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                 ? `docker container logs -t --since=${info.prepSince} ${info.containerName}`
                                 : null,
 
-                        start: `docker container logs -f -t --since=${
-                            info.since || '5s'
-                        } ${info.containerName}`,
+                        start: `docker container logs -f -t --since=${info.since || '5s'
+                            } ${info.containerName}`,
                         restart: () => {
                             const { startedAt } = getContainerStateSync(
                                 info.containerName
                             );
 
-                            return `docker container logs -f -t --since=${
-                                new Date(startedAt).getTime() / 1000 - 5
-                            } ${info.containerName}`;
+                            return `docker container logs -f -t --since=${new Date(startedAt).getTime() / 1000 - 5
+                                } ${info.containerName}`;
                         },
                     },
                     lineState: {
@@ -625,7 +623,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                             (config.get(
                                                 `projectConfigs.${pathKey}`
                                             ).recentItems || {})[
-                                                info.serviceName
+                                            info.serviceName
                                             ] || [];
 
                                         if (
@@ -825,7 +823,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
                                             if (
                                                 info.packageManager !==
-                                                    'yarn' ||
+                                                'yarn' ||
                                                 (info.packageManager ===
                                                     'yarn' &&
                                                     config.yarnVersion >= 2)
@@ -983,9 +981,8 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
                                         const command = `docker exec -it -e ${execEnvironment.join(
                                             ' -e '
-                                        )} -u=root:dnv ${
-                                            info.containerName
-                                        } ${shell}`;
+                                        )} -u=root:dnv ${info.containerName
+                                            } ${shell}`;
 
                                         panel.initItem(name, {
                                             key: info.serviceName,
@@ -1024,10 +1021,10 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
                                         async () => {
                                             return info.isNode
                                                 ? getPackageScripts(
-                                                      info.path,
-                                                      info.shell,
-                                                      info.packageManager
-                                                  )
+                                                    info.path,
+                                                    info.shell,
+                                                    info.packageManager
+                                                )
                                                 : [];
                                         },
 

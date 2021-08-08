@@ -571,7 +571,7 @@ class PanelBase extends blessed.Box {
         let index = 0;
 
         this.screen.key(
-            'C-left',
+            ['M-left', 'C-left'],
             throttle(() => {
                 if (this.selected) {
                     this.subPanelSelect = true;
@@ -596,7 +596,7 @@ class PanelBase extends blessed.Box {
         );
 
         this.screen.key(
-            'C-right',
+            ['M-right', 'C-right'],
             throttle(() => {
                 if (this.selected) {
                     this.subPanelSelect = true;
@@ -619,8 +619,7 @@ class PanelBase extends blessed.Box {
         );
 
         this.screen.key(
-            'C-up',
-
+            ['M-up', 'C-up'],
             throttle(() => {
                 if (this.selected && this.gridActive) {
                     this.focusUp();
@@ -629,7 +628,7 @@ class PanelBase extends blessed.Box {
         );
 
         this.screen.key(
-            'C-down',
+            ['M-down', 'C-down'],
             throttle(() => {
                 if (this.selected && this.gridActive) {
                     this.focusDown();

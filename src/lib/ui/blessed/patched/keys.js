@@ -46,12 +46,12 @@ var metaKeyCodeReAnywhere = /(?:\x1b)([a-zA-Z0-9])/;
 var metaKeyCodeRe = new RegExp('^' + metaKeyCodeReAnywhere.source + '$');
 var functionKeyCodeReAnywhere = new RegExp(
     '(?:\x1b+)(O|N|\\[|\\[\\[)(?:' +
-        [
-            '(\\d+)(?:;(\\d+))?([~^$])',
-            '(?:M([@ #!a`])(.)(.))', // mouse
-            '(?:1;)?(\\d+)?([a-zA-Z])',
-        ].join('|') +
-        ')'
+    [
+        '(\\d+)(?:;(\\d+))?([~^$])',
+        '(?:M([@ #!a`])(.)(.))', // mouse
+        '(?:1;)?(\\d+)?([a-zA-Z])',
+    ].join('|') +
+    ')'
 );
 var functionKeyCodeRe = new RegExp('^' + functionKeyCodeReAnywhere.source);
 var escapeCodeReAnywhere = new RegExp(
@@ -282,6 +282,20 @@ function emitKeys(
             key.meta = true;
             key.full = 'M-down';
             key.code = 'OB';
+        } else if (s === '\u001b[1;6A') {
+            key.name = 'up';
+            key.ctrl = true;
+            key.shift = true;
+            key.meta = false;
+            key.code = '[A';
+            key.full = 'C-S-up';
+        } else if (s === '\u001b[1;6B') {
+            key.name = 'down';
+            key.ctrl = true;
+            key.shift = true;
+            key.meta = false;
+            key.code = '[B';
+            key.full = 'C-S-down';
         } else if (s === '\r') {
             // carriage return
             key.name = 'return';
@@ -333,10 +347,10 @@ function emitKeys(
             // reassemble the key code leaving out leading \x1b's,
             // the modifier key bitflag and any meaningless "1;" sequence
             var code =
-                    (parts[1] || '') +
-                    (parts[2] || '') +
-                    (parts[4] || '') +
-                    (parts[9] || ''),
+                (parts[1] || '') +
+                (parts[2] || '') +
+                (parts[4] || '') +
+                (parts[9] || ''),
                 modifier = (parts[3] || parts[8] || 1) - 1;
 
             // Parse the key modifier

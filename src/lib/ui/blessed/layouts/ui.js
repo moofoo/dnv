@@ -74,9 +74,8 @@ class UI extends Grid {
                 ) {
                     return `${Math.ceil(width * colSpan)}%`;
                 } else {
-                    return `${Math.ceil(width * colSpan)}%${widthSign}${
-                        widthOffset !== 0 ? Math.abs(widthOffset) : ''
-                    }`;
+                    return `${Math.ceil(width * colSpan)}%${widthSign}${widthOffset !== 0 ? Math.abs(widthOffset) : ''
+                        }`;
                 }
             },
             heightFn: ({
@@ -89,9 +88,8 @@ class UI extends Grid {
                 parentHeight,
             }) => {
                 if (row === 0 || (row > 0 && parentHeight % 2 !== 0)) {
-                    return `${Math.ceil(height * rowSpan)}%${heightSign}${
-                        heightOffset !== 0 ? Math.abs(heightOffset) : ''
-                    }`;
+                    return `${Math.ceil(height * rowSpan)}%${heightSign}${heightOffset !== 0 ? Math.abs(heightOffset) : ''
+                        }`;
                 }
             },
         };
@@ -389,6 +387,11 @@ class UI extends Grid {
 
     initUi() {
         this.initListBar();
+        /*
+                this.screen.on('keypress', (ch, key) => {
+                    this.debug(key, true);
+                });
+                */
 
         this.on('resize-all', (item) => {
             if (this.resizingAll) {
@@ -564,7 +567,7 @@ class UI extends Grid {
 
         this.listBar.add({
             text: `Pg ${currentPage + 1}`,
-            callback: () => {},
+            callback: () => { },
         });
 
         this.listBarPages.push(
@@ -589,7 +592,7 @@ class UI extends Grid {
 
                 this.listBar.add({
                     text: '|',
-                    callback: () => {},
+                    callback: () => { },
                 });
 
                 this.listBar.children[

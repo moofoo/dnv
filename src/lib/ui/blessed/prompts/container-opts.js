@@ -159,6 +159,10 @@ class ContainerOpts extends blessed.List {
                         'C-right',
                         'C-up',
                         'C-down',
+                        'C-S-left',
+                        'C-S-right',
+                        'C-S-up',
+                        'C-S-down',
                         'M-left',
                         'M-right',
                         'M-up',
@@ -167,9 +171,12 @@ class ContainerOpts extends blessed.List {
                     ].includes(key.full)
                 ) {
                     if (
-                        ['C-left', 'C-right', 'C-up', 'C-down'].includes(
-                            key.full
-                        )
+                        ['C-left', 'C-right', 'C-up', 'C-down', 'C-S-left',
+                            'C-S-right',
+                            'C-S-up',
+                            'C-S-down',].includes(
+                                key.full
+                            )
                     ) {
                         this.switchingPanels = true;
                     } else if (

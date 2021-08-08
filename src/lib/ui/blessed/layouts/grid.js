@@ -923,7 +923,7 @@ class Grid extends blessed.Box {
                 );
 
                 this.screen.key(
-                    'C-up',
+                    'C-S-up',
                     throttle(() => {
                         if (this.processKeys && !this.screen.promptOpen) {
                             this.focusUp();
@@ -950,12 +950,12 @@ class Grid extends blessed.Box {
                           if (cPage >= this.pages) {
                               cPage = 0;
                           }
-  
+
                           this.showPage(cPage);
                       }
                   }, 250)
               );
-  
+
               this.screen.key(
                   'C-S-left',
                   throttle(() => {
@@ -965,7 +965,7 @@ class Grid extends blessed.Box {
                           if (cPage < 0) {
                               cPage = this.pages - 1;
                           }
-  
+
                           this.showPage(cPage);
                       }
                   }, 250)
@@ -1444,9 +1444,10 @@ class Grid extends blessed.Box {
     }
 
     debug(text, clear = false, diff = false) {
-        if (1 === 1) {
-            return;
-        }
+        /*     if (1 === 1) {
+                 return;
+             }
+             */
         if (this.parent !== this.screen && this.parent.debug) {
             this.parent.debug(text, clear, diff);
             return;
