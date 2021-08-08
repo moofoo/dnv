@@ -214,7 +214,7 @@ const populateAndInstall = ({
         if (projectConfig.populateFailed || retry || optsInstall) {
             try {
                 await removePackageVolume(volumeName, '');
-            } catch {}
+            } catch { }
         }
 
         try {
@@ -285,7 +285,7 @@ const populateAndInstall = ({
                                 if (output.stdout) {
                                     json = JSON.parse(output.stdout);
                                 }
-                            } catch {}
+                            } catch { }
 
                             if (json) {
                                 if (!pkgDeps.includes(dep)) {
@@ -437,12 +437,12 @@ const populateAndInstall = ({
                 */
                 let shortCommand =
                     newlyCreated &&
-                    packageManager === 'npm' &&
-                    managerFiles.lockFile
+                        packageManager === 'npm' &&
+                        managerFiles.lockFile
                         ? 'npm ci'
                         : packageManager === 'npm'
-                        ? 'npm install'
-                        : `${packageManager} install`;
+                            ? 'npm install'
+                            : `${packageManager} install`;
 
                 let install = '';
 
@@ -452,17 +452,17 @@ const populateAndInstall = ({
                 const yarnFlags = yarn2
                     ? ''
                     : useCache && toForceInstall.length
-                    ? '--non-interactive --force'
-                    : '--non-interactive';
+                        ? '--non-interactive --force'
+                        : '--non-interactive';
 
                 install =
                     newlyCreated &&
-                    packageManager === 'npm' &&
-                    managerFiles.lockFile
+                        packageManager === 'npm' &&
+                        managerFiles.lockFile
                         ? `npm ci ${npmFlags}`
                         : packageManager === 'yarn'
-                        ? `${packageManager} install ${yarnFlags}`
-                        : `${packageManager} install ${npmFlags}`;
+                            ? `${packageManager} install ${yarnFlags}`
+                            : `${packageManager} install ${npmFlags}`;
 
                 if (useCache && mountFlag !== '') {
                     install +=
@@ -615,7 +615,7 @@ const populateAndInstall = ({
                         __dirname + '/dnv_scripts/dnv_metrics.js',
                         container,
                         modulesDir + '/.dnv_scripts' ||
-                            `${workingDir}/node_modules/.dnv_scripts`
+                        `${workingDir}/node_modules/.dnv_scripts`
                     );
                 }
 
@@ -692,7 +692,7 @@ const dnvDown = ({ externalVolume = false, name = '', cwd = files.cwd }) => {
 
     try {
         execa.commandSync(cmd, { cwd, stdio: 'pipe' });
-    } catch {}
+    } catch { }
 };
 
 const dnvBuild = async ({
@@ -734,14 +734,14 @@ const dnvBuild = async ({
     }
 };
 
-const dnvUpDetached = ({
+const dnvUpDetached = async function ({
     cwd = files.cwd,
     removeOrphans = true,
     file = [],
     projectName = null,
     externalVolume = false,
     progress = console.log,
-}) => {
+}) {
     if (externalVolume) {
         file.unshift('docker-compose-dnv-gen.yml');
     }
@@ -759,10 +759,35 @@ const dnvUpDetached = ({
     command += ` up --detach ${removeOrphans ? '--remove-orphans' : ''}`;
 
     try {
-        execa.commandSync(command, {
+        const subprocess = execa.command(command, {
             cwd,
             stdio: 'pipe',
+            all: true
         });
+
+        let pullLogged = [];
+
+        subprocess.all.on('data', data => {
+            data = data.toString();
+
+            let m = data.match(/[a-zA-Z]+ Pulling/);
+
+            if (m) {
+                m = m[0].trim();
+                if (m.replace(" Pulling", "").length > 2) {
+
+                    if (!pullLogged.includes(m)) {
+                        pullLogged.push(m);
+                        progress(m);
+                    }
+                }
+            }
+
+
+        });
+
+        await subprocess;
+
     } catch (err) {
         const msg = 'Windows.UI.Notifications.ToastNotifier';
         const msg2 = ': network';

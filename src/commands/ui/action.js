@@ -234,7 +234,7 @@ const runUpDetached = (opts) => {
                 const { dnvUpDetached } = require('../../lib/docker/cli');
 
                 try {
-                    dnvUpDetached({
+                    await dnvUpDetached({
                         progress: progressMsg,
                         projectName,
                         removeOrphans,
