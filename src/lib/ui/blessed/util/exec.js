@@ -37,7 +37,7 @@ const getAlpineInstallsAfterDate = async (containerName, createdTime) => {
             ],
             { shell: true, stdio: 'pipe' }
         );
-    } catch (err) {}
+    } catch (err) { }
 
     if (!output.stdout) {
         return [];
@@ -423,7 +423,7 @@ const createDnvGroup = async (shell, containerName, user = 'root') => {
                 { shell: true }
             );
         }
-    } catch (err) {}
+    } catch (err) { }
 };
 
 const killDnvProcesses = async (shell, containerName) => {
@@ -457,7 +457,7 @@ const killDnvProcesses = async (shell, containerName) => {
                 }
             );
         }
-    } catch (err) {}
+    } catch (err) { }
 };
 
 const getDependencies = (cwd) => {
@@ -493,7 +493,7 @@ const getReadmeString = async (packageName, cwd) => {
             return rdme;
         }
 
-        return 'No such lick';
+        return 'Readme.md not found';
     }
 
     const pkgPath = `${cwd}/node_modules/${packageName}/`;
@@ -531,7 +531,7 @@ const getYarn2ReadmeString = async (packageName, cwd) => {
 
     zip = new StreamZip.async({ file: zip, storeEntries: true });
 
-    const possible = ['README.md', 'readme.md', 'Readme.md'];
+    const possible = ['README.md', 'readme.md', 'Readme.md', 'README.markdown', 'readme.markdown', 'Readme.markdown'];
 
     let readme;
 
@@ -546,7 +546,7 @@ const getYarn2ReadmeString = async (packageName, cwd) => {
             readme = await zip.entryData(
                 `node_modules/${packageName}/${readmeFile}`
             );
-        } catch {}
+        } catch { }
 
         if (readme && readme.toString) {
             readme = readme.toString();

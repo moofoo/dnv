@@ -135,7 +135,7 @@ class Grid extends blessed.Box {
         return count;
     }
 
-    postInit() {}
+    postInit() { }
 
     async activate() {
         if (this.options.parentActivate) {
@@ -352,8 +352,8 @@ class Grid extends blessed.Box {
 
         const heightOffsetVal =
             this.panelGrid &&
-            options.panelGrid &&
-            options.panelGrid.heightOffset
+                options.panelGrid &&
+                options.panelGrid.heightOffset
                 ? options.panelGrid.heightOffset
                 : options.heightOffset;
 
@@ -447,9 +447,8 @@ class Grid extends blessed.Box {
                 parentHeight: this.parent.height,
             });
         } else {
-            opts.height = `${Math.floor(height * rowSpan)}%${heightSign}${
-                heightOffset !== 0 ? Math.abs(heightOffset) : ''
-            }`;
+            opts.height = `${Math.floor(height * rowSpan)}%${heightSign}${heightOffset !== 0 ? Math.abs(heightOffset) : ''
+                }`;
         }
 
         if (this.options.widthFn) {
@@ -463,26 +462,23 @@ class Grid extends blessed.Box {
                 parentWidth: this.parent.width,
             });
         } else {
-            opts.width = `${Math.ceil(width * colSpan)}%${widthSign}${
-                widthOffset !== 0 ? Math.abs(widthOffset) : ''
-            }`;
+            opts.width = `${Math.ceil(width * colSpan)}%${widthSign}${widthOffset !== 0 ? Math.abs(widthOffset) : ''
+                }`;
         }
 
         if (row === 0) {
             opts.atop = this.atop + yOffset;
         }
 
-        opts.top = `${Math.floor(row * height)}%${ySign}${
-            yOffset !== 0 ? Math.abs(yOffset) : ''
-        }`;
+        opts.top = `${Math.floor(row * height)}%${ySign}${yOffset !== 0 ? Math.abs(yOffset) : ''
+            }`;
 
         if (col === 0) {
             opts.aleft = this.aleft + xOffset;
         }
 
-        opts.left = `${Math.floor(col * width)}%${xSign}${
-            xOffset !== 0 ? Math.abs(xOffset) : ''
-        }`;
+        opts.left = `${Math.floor(col * width)}%${xSign}${xOffset !== 0 ? Math.abs(xOffset) : ''
+            }`;
 
         return opts;
     }
@@ -558,7 +554,7 @@ class Grid extends blessed.Box {
                     if (
                         colSpanIndex !== -1 ||
                         this.itemMap[currentPage][currentRow + y][
-                            currentCol + x
+                        currentCol + x
                         ] === ''
                     ) {
                         this.itemMap[currentPage][currentRow + y][
@@ -909,7 +905,7 @@ class Grid extends blessed.Box {
                 });
             } else {
                 this.screen.key(
-                    'C-right',
+                    'C-S-right',
                     throttle(() => {
                         if (this.processKeys && !this.screen.promptOpen) {
                             this.focusRight();
@@ -918,7 +914,7 @@ class Grid extends blessed.Box {
                 );
 
                 this.screen.key(
-                    'C-left',
+                    'C-S-left',
                     throttle(() => {
                         if (this.processKeys && !this.screen.promptOpen) {
                             this.focusLeft();
@@ -936,7 +932,7 @@ class Grid extends blessed.Box {
                 );
 
                 this.screen.key(
-                    'C-down',
+                    'C-S-down',
                     throttle(() => {
                         if (this.processKeys && !this.screen.promptOpen) {
                             this.focusDown();
@@ -945,35 +941,35 @@ class Grid extends blessed.Box {
                 );
             }
 
-            this.screen.key(
-                'C-S-right',
-                throttle(() => {
-                    if (this.processKeys && !this.screen.promptOpen) {
-                        let cPage = this.currentPage;
-                        cPage++;
-                        if (cPage >= this.pages) {
-                            cPage = 0;
-                        }
-
-                        this.showPage(cPage);
-                    }
-                }, 250)
-            );
-
-            this.screen.key(
-                'C-S-left',
-                throttle(() => {
-                    if (this.processKeys && !this.screen.promptOpen) {
-                        let cPage = this.currentPage;
-                        cPage--;
-                        if (cPage < 0) {
-                            cPage = this.pages - 1;
-                        }
-
-                        this.showPage(cPage);
-                    }
-                }, 250)
-            );
+            /*  this.screen.key(
+                  'C-S-right',
+                  throttle(() => {
+                      if (this.processKeys && !this.screen.promptOpen) {
+                          let cPage = this.currentPage;
+                          cPage++;
+                          if (cPage >= this.pages) {
+                              cPage = 0;
+                          }
+  
+                          this.showPage(cPage);
+                      }
+                  }, 250)
+              );
+  
+              this.screen.key(
+                  'C-S-left',
+                  throttle(() => {
+                      if (this.processKeys && !this.screen.promptOpen) {
+                          let cPage = this.currentPage;
+                          cPage--;
+                          if (cPage < 0) {
+                              cPage = this.pages - 1;
+                          }
+  
+                          this.showPage(cPage);
+                      }
+                  }, 250)
+              );*/
 
             this.screen.on('keypress', (ch, key) => {
                 if (
@@ -1303,7 +1299,7 @@ class Grid extends blessed.Box {
             if (
                 col >
                 Math.floor(this.itemMap[this.currentPage][coords.row].length) /
-                    2
+                2
             ) {
                 col = this.itemMap[this.currentPage][row].lastIndexOf(
                     item[mapKey]
@@ -1342,7 +1338,7 @@ class Grid extends blessed.Box {
             if (
                 col >
                 Math.floor(this.itemMap[this.currentPage][coords.row].length) /
-                    2
+                2
             ) {
                 col = this.itemMap[this.currentPage][row].lastIndexOf(
                     item[mapKey]
@@ -1383,16 +1379,16 @@ class Grid extends blessed.Box {
         const prevRowItem =
             this.itemMap[this.currentPage][row - 1] &&
             this.itemMap[this.currentPage][row - 1][
-                this.itemMap[this.currentPage][row - 1].length - 1
+            this.itemMap[this.currentPage][row - 1].length - 1
             ];
 
         const lastRowItem =
             this.itemMap[this.currentPage][
-                this.itemMap[this.currentPage].length - 1
+            this.itemMap[this.currentPage].length - 1
             ][
-                this.itemMap[this.currentPage][
-                    this.itemMap[this.currentPage].length - 1
-                ].length - 1
+            this.itemMap[this.currentPage][
+                this.itemMap[this.currentPage].length - 1
+            ].length - 1
             ];
 
         if (leftItem) {

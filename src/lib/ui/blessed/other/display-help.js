@@ -93,14 +93,12 @@ const gridHelp = (screen) => {
 
     heading(left, 'General UI');
     command(left, 'Exit UI', 'Ctrl + q');
-    command(left, 'Select Service Panel', 'Ctrl + Direction');
-    command(left, 'Select Service Sub-Panel', 'Alt + Direction');
+    command(left, 'Select Service Panel', 'Ctrl + Shift + Direction');
+    command(left, 'Select Service Sub-Panel', 'Ctrl + Direction');
     command(left, 'Close/Exit Sub-Panel', 'Ctrl + z');
     command(left, 'Maximize Panel', 'Alt + x');
     command(left, 'Display Log and Sub-Panels in a Grid', 'Alt + Shift + x');
     command(left, 'Minimize Panel / Close Sub-Panel Grid', 'Alt + x');
-    command(left, 'Next Services Page', 'Ctrl + Shift + Right');
-    command(left, 'Prev Services Page', 'Ctrl + Shift + Left');
     command(left, 'Select Services Page', 'F1 -> F8');
     command(left, 'Scroll Up Log', 'Up, Shift-Up, Page-Up');
     command(left, 'Scroll Down Log', 'Down, Shift-Down, Page-Down');
