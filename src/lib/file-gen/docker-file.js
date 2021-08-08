@@ -19,6 +19,12 @@ class DockerFile {
     }
 
     static getInstance(filename = 'Dockerfile', context = './', parse = true) {
+        filename = path.basename(filename);
+
+        if (!filename.includes('Dockerfile')) {
+            filename = 'Dockerfile';
+        }
+
         context = prepPath(context);
 
         if (fs.existsSync(context + '/' + filename)) {
@@ -466,25 +472,25 @@ class DockerFile {
                                     if (
                                         !this.containerFS.includes(
                                             copyTo +
-                                                '/' +
-                                                filedir.name +
-                                                '/' +
-                                                filedir2.name
+                                            '/' +
+                                            filedir.name +
+                                            '/' +
+                                            filedir2.name
                                         )
                                     ) {
                                         this.containerFS.push(
                                             copyTo +
-                                                '/' +
-                                                filedir.name +
-                                                '/' +
-                                                filedir2.name
+                                            '/' +
+                                            filedir.name +
+                                            '/' +
+                                            filedir2.name
                                         );
                                         this.localLookup[
                                             copyTo +
-                                                '/' +
-                                                filedir.name +
-                                                '/' +
-                                                filedir2.name
+                                            '/' +
+                                            filedir.name +
+                                            '/' +
+                                            filedir2.name
                                         ] =
                                             from +
                                             '/' +

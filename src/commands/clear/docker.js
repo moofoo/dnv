@@ -87,6 +87,8 @@ const docker = async (
     if (removeImagesPrompt) {
         images = await getContainerImages(nodeContainerNames);
 
+        images = images.filter(img => !img.includes('sha256:'));
+
         if (images.length) {
             if (removeImagesPrompt === 'force' || force) {
                 remImages = true;

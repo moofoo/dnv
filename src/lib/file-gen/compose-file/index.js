@@ -354,8 +354,13 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
             if (build) {
                 let { context, dockerfile } = build;
 
+                dockerfile = path.basename(dockerfile);
+
+                if (!dockerfile.includes('Dockerfile')) {
+                    dockerfile = 'Dockerfile';
+                }
+
                 context = context || '.';
-                dockerfile = (dockerfile || 'Dockerfile').replace('./', '');
 
                 context = prepPath(context);
 

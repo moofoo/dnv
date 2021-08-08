@@ -26,22 +26,22 @@ class ComposeParseHelpers {
         return packageManager === 'npm'
             ? 'package-lock.json'
             : packageManager === 'yarn'
-            ? 'yarn.lock'
-            : packageManager === 'pnpm'
-            ? 'pnpm-lock.yml'
-            : '';
+                ? 'yarn.lock'
+                : packageManager === 'pnpm'
+                    ? 'pnpm-lock.yml'
+                    : '';
     }
 
     getDotFile(packageManager = 'npm', yarnVersion = null) {
         return packageManager === 'npm' || packageManager === 'pnpm'
             ? '.npmrc'
             : packageManager === 'yarn'
-            ? yarnVersion
-                ? yarnVersion > 2
-                : config.yarnVersion > 2
-                ? '.yarnrc.yml'
-                : '.yarnrc'
-            : '';
+                ? yarnVersion
+                    ? yarnVersion > 2
+                    : config.yarnVersion > 2
+                        ? '.yarnrc.yml'
+                        : '.yarnrc'
+                : '';
     }
 
     testForNode(serviceOptions) {
@@ -87,7 +87,7 @@ class ComposeParseHelpers {
                 to = volume.target;
             }
 
-            if (from.includes('/') || from.includes('.')) {
+            if (from && (from.includes('/') || from.includes('.'))) {
                 if (WIN32) {
                     const match = from.substr(0, 3).match(/\/[a-z]\//i);
 
@@ -99,9 +99,11 @@ class ComposeParseHelpers {
                         );
                     }
                 }
+                if (from) {
 
-                df.addPath(from, to);
-            } else {
+                    df.addPath(from, to);
+                }
+            } else if (to) {
                 df.containerFS.push(to);
             }
         }

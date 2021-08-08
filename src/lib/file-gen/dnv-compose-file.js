@@ -98,7 +98,7 @@ class DnvComposeFile {
                 init: true,
                 tty: true,
                 labels: {
-                    'is-dnv': true,
+                    'is-dnv': 'true',
                     'project-name': cf.projectName,
                 },
             };
@@ -187,11 +187,11 @@ class DnvComposeFile {
                                             'node',
                                             config.yarnVersion >= 2
                                                 ? `yarn node --require="${this.getMetricsPath(
-                                                      serviceInfo
-                                                  )}"`
+                                                    serviceInfo
+                                                )}"`
                                                 : `node --require="${this.getMetricsPath(
-                                                      serviceInfo
-                                                  )}"`
+                                                    serviceInfo
+                                                )}"`
                                         );
                                     addedStats = true;
                                 }
