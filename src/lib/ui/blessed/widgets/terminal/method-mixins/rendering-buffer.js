@@ -2,6 +2,20 @@ let nullCell = null;
 let altCell = null;
 
 class RenderingAndBuffer {
+    /*
+        The gist of this optimization is that if only a few rows
+        get changed when XTerm refreshes, we run screen.draw
+        right then and there for those rows, as opposed to
+        running screen.render, which recurses through the entire
+        node tree running every widget's render method, before
+        running screen.draw for the entire screen.
+
+        This keeps performance somewhat reasonable when the UI is displaying
+        many Terminal shells with periodically updating content.
+
+        Since this onvolves calling render / draw out of turn, a
+        a bunch of checks are needed to avoid weird visual glitches.
+    */
     termRender(all = false, full = false) {
         full = full | this.options.full;
 
@@ -11,7 +25,7 @@ class RenderingAndBuffer {
             return;
         }
 
-        if (!this.rendered || this.refreshCoords) {
+        if (!this.rendered || this.refreshCoords || this.noPos === true) {
             this.coords();
             this.screen.render();
         } else if (
@@ -19,22 +33,21 @@ class RenderingAndBuffer {
             refresh ||
             this.mouseSelecting ||
             this.popover ||
+            this.hasSelection() ||
             this.searchActive ||
             this.promptOpen ||
             !this.lpos ||
             !this.active ||
             !this.ready ||
-            (full && this.panelGrid) ||
+            (full && this.panelGrid && this.screen.focused === this) ||
             (this.parent && !this.parent.lpos)
         ) {
             this.fullRender();
         } else if (!this.hidden) {
-            const ret = this.render(true);
+            const ret = this.render(true) || this.dimensions
 
-            if (!ret) {
-                this.screen.render();
-            } else if (full) {
-                this.screen.draw(ret.yi + this.itop, ret.yl - this.ibottom);
+            if (full) {
+                this.screen.draw(ret.yi, ret.yl);
             } else {
                 this.screen.draw(this.filthyTop, this.filthyBottom);
             }
@@ -42,6 +55,7 @@ class RenderingAndBuffer {
 
         this.refresh = false;
     }
+
 
     render(termRefresh = false) {
         if (this._label) {
@@ -65,18 +79,24 @@ class RenderingAndBuffer {
             ret.xl -
             this.iright -
             (this.options.termType === 'program' &&
-            this.options.shellType !== 'script'
+                this.options.shellType !== 'script'
                 ? 0
                 : 1);
 
-        const yi = ret.yi + this.itop;
+        const pGrid = (this.panelGrid || (this.parent && this.parent.gridActive));
 
-        const yl = ret.yl - this.ibottom;
+        const yi = ret.yi + this.itop
+
+        const yl = ret.yl - this.ibottom
 
         const start = Math.max(yi, 0);
         const end = yl;
         const left = Math.max(xi, 0);
         const right = xl;
+
+
+        const scrollStart = start;
+        const scrollEnd = end;
 
         let xs1;
         let xs2;
@@ -111,14 +131,14 @@ class RenderingAndBuffer {
         let trackY;
 
         if (this.alwaysScroll) {
-            trackY = this.childBase / (i - (ret.yl - ret.yi));
+            trackY = this.childBase / (i - (scrollEnd - scrollStart));
         } else {
             trackY = (this.childBase + this.childOffset) / (i - 1);
         }
 
-        trackY = ret.yi + (((ret.yl - ret.yi) * trackY) | 0);
+        trackY = scrollStart + (((scrollEnd - scrollStart) * trackY) | 0);
 
-        if (trackY >= ret.yl) trackY = ret.yl - 1;
+        if (trackY >= scrollEnd) trackY = scrollEnd - 1;
 
         const terminalBg = this.options.termType === 'process' && this.focused;
 
@@ -169,7 +189,7 @@ class RenderingAndBuffer {
 
             if (!sline || !tline) break;
 
-            if (this.rendered && !this.filter & termRefresh) {
+            if (this.rendered && termRefresh && !this.filter && this.options.termType !== 'markdown') {
                 sline.dirty = false;
             }
 
@@ -185,6 +205,8 @@ class RenderingAndBuffer {
             ) {
                 searchParts = this.searchString.split('');
             }
+
+            let scrollDrawn = false;
 
             for (x = left; x < right; x++) {
                 if (!sline[x]) {
@@ -365,48 +387,99 @@ class RenderingAndBuffer {
                 );
 
                 diff = false;
+                /*
+                    Scrollbar drawing
+                */
 
-                if (scell[0] !== dattr) {
-                    diff = true;
-                    scell[0] = dattr;
-                }
-
-                if (scell[1] !== ch) {
-                    diff = true;
-                    scell[1] = ch;
-                }
-
-                this.handleUnicode(nullCell, x, y, scell);
-
-                [diff, searchParts, match, scell] = this.markSearchResults(
-                    ch,
-                    x,
-                    y,
-                    xi,
-                    ys1,
-                    ys2,
-                    xs1,
-                    xs2,
-                    inverse,
-                    underline,
-                    doFade,
-                    searchParts,
-                    match,
-                    tline,
-                    nullCell,
-                    isSelection,
-                    sline,
-                    scell,
-                    diff
-                );
-
-                if (y === trackY || y === this.lastTrackY) {
-                    diff = true;
-                }
-
-                if (diff) {
+                if (y === this.lastTrackY) {
                     sline.dirty = true;
                 }
+
+
+
+                if (yl - yi < i && !scrollDrawn && x + (pGrid ? 3 : 2) >= ret.xl && sline[x + 1]) {
+                    scrollDrawn = true;
+
+                    if (this.track && y === trackY) {
+                        ch = this.track.ch || ' ';
+
+                        dattr = this.sattr(
+                            { bg: 15 },
+                            this.style.fg,
+                            15
+                        );
+
+                    } else if (this.scrollbar) {
+                        ch = this.scrollbar.ch || ' ';
+                        dattr = this.sattr(
+                            { bg: 242 },
+                            this.style.fg,
+                            242
+                        );
+                    }
+
+                    if (sline[x + 1][0] !== dattr) {
+                        sline.dirty = true;
+                        sline[x + 1][0] = dattr;
+                    }
+
+                    if (sline[x + 1][1] !== ch) {
+                        sline.dirty = true;
+                        sline[x + 1][1] = ch;
+                    }
+
+
+                } else {
+
+                    if (scell[0] !== dattr) {
+                        diff = true;
+                        scell[0] = dattr;
+                    }
+
+                    if (scell[1] !== ch) {
+                        diff = true;
+                        scell[1] = ch;
+                    }
+
+
+
+
+                    this.handleUnicode(nullCell, x, y, scell);
+
+                    [diff, searchParts, match, scell] = this.markSearchResults(
+                        ch,
+                        x,
+                        y,
+                        xi,
+                        ys1,
+                        ys2,
+                        xs1,
+                        xs2,
+                        inverse,
+                        underline,
+                        doFade,
+                        searchParts,
+                        match,
+                        tline,
+                        nullCell,
+                        isSelection,
+                        sline,
+                        scell,
+                        diff
+                    );
+
+
+
+
+                    if (diff) {
+                        sline.dirty = true;
+                    }
+
+
+                }
+
+
+
             }
         }
 
@@ -505,7 +578,7 @@ class RenderingAndBuffer {
                 !!searchParts[0] &&
                 (ch === searchParts[0] ||
                     ch.toLocaleLowerCase() ===
-                        searchParts[0].toLocaleLowerCase())
+                    searchParts[0].toLocaleLowerCase())
             ) {
                 searchParts.shift();
                 match.push(x);
@@ -568,6 +641,23 @@ class RenderingAndBuffer {
 
         return [diff, searchParts, match, scell];
     }
+
+    /*
+        This tries to determine whether the shell is at
+        a command line or currently running a program.
+
+        This is used to control the visibility of the cursor,
+        and also switch from custom mouse input handling to
+        sending the escape codes directly to the PTY (binary encoded).
+
+        There are some situations where this is easy:
+        - Terminal's opened via the 'exec' menu are programs
+        - We can watch for the escape codes for hiding/showing the cursor.
+          These are usually written to the screen when running programs from the command line.
+
+        Aside from that, it tries to use the cursor position and visibility to make
+        an educated guess.
+    */
 
     detectShellType(onPrompt, shellLine, cursorLine, hasChar) {
         const buffer = this.term.buffer.active;

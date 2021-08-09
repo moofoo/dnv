@@ -17,37 +17,28 @@ class PanelGrid {
 
         item.panelGrid = true;
 
-        item.startTop = item.top;
-        item.startLeft = item.left;
-        item.startHeight = item.height;
-        item.startWidth = item.width;
-
         item.refreshCoords = true;
 
-        if (itemsChange && !item.doResize) {
-            if (
-                (!addingItem &&
-                    this.gridItems === 2 &&
-                    item.termType !== 'process') ||
-                item.newItem ||
-                item.col !== currentCol ||
-                item.row !== currentRow ||
-                item.colSpan !== colSpan ||
-                item.rowSpan !== rowSpan ||
-                item.col !== (rowArray ? rowArrayIndex : currentCol) ||
-                (item.row === currentRow && item.columns !== cols)
-            ) {
-                item.doResize = true;
-            }
-        }
         item.row = currentRow;
         item.col = rowArray ? rowArrayIndex : currentCol;
         item.colSpan = colSpan;
         item.rowSpan = rowSpan;
         item.columns = cols;
 
-        item.style.border = { ...this.border };
-        item.border = { ...this.border };
+        item._ileft = undefined;
+        item._itop = undefined;
+        item._iright = undefined;
+        item._ibottom = undefined;
+        item._iwidth = undefined;
+        item._iheight = undefined;
+
+        item.style.border = this._border
+            ? { ...this._border }
+            : this.border
+                ? { ...this.border }
+                : { type: item === this.activeItem ? 'heavy' : 'line' };
+
+        item.border = { ...item.style.border };
 
         item.style.border.fg = function () {
             let {
@@ -90,25 +81,26 @@ class PanelGrid {
 
         item.gridFocus = function () {
             this.border = this.border || {};
-            this.style.boder = this.style.border || {};
+            this.style.border = this.style.border || {};
 
             this.border.type = 'heavy';
             this.style.border.type = 'heavy';
+
             this.screen.render();
         }.bind(item);
 
         item.gridBlur = function () {
             this.border = this.border || {};
-            this.style.boder = this.style.border || {};
+            this.style.border = this.style.border || {};
+
             this.border.type = 'line';
             this.style.border.type = 'line';
+
             this.screen.render();
         }.bind(item);
 
         item.on('focus', item.gridFocus);
         item.on('blur', item.gridBlur);
-
-        item.style.border.type = function () {}.bind(item);
 
         item.border.fg = item.style.border.fg;
         item.border.type = item.style.border.type;
@@ -127,12 +119,12 @@ class PanelGrid {
             }.bind(item),
         });
 
-        if (currentRow === 0) {
-            item.position.top = this.atop - this.abottom - 2;
+
+        if (x >= cols || +currentRow > 0) {
+            item.position.top = `${Math.floor(currentRow * height)}%-3`;
         } else {
-            item.position.top = `${Math.floor(currentRow * height)}%${
-                currentRow > 0 ? '-4' : ''
-            }`;
+            item.position.top = !item.noBorder && item.border && item.itop || 0;
+
         }
 
         if (currentCol + 1 === cols || width >= 99) {
@@ -141,15 +133,18 @@ class PanelGrid {
             item.position.width = `${Math.ceil(width * colSpan)}%`;
         }
 
-        if (currentCol === 0) {
+        if (+currentCol === 0) {
             item.position.left = this.aleft - this.parent.aleft + 1;
         } else {
             item.position.left = `${Math.floor(currentCol * width)}%`;
         }
 
-        item.position.height = `${Math.floor(height * rowSpan)}%${
-            currentRow === 0 ? '-4' : '+4'
-        }`;
+        if (x >= cols || +currentRow > 0) {
+            item.position.height = `${Math.floor(height * rowSpan)}%+4`;
+
+        } else {
+            item.position.height = `${Math.floor(height * rowSpan)}%-4`;
+        }
 
         item.resizeOnFocus = false;
 
@@ -234,7 +229,7 @@ class PanelGrid {
 
         this.activeKeys = [];
 
-        items.forEach((item) => {
+        items.forEach(item => {
             this.activeKeys.push(item.itemKey);
         });
 
@@ -433,7 +428,9 @@ class PanelGrid {
 
         let toGrid = false;
 
+
         if (panelGrid && this.activeKeys.length > 1) {
+            this.noBorder = true;
             toGrid = true;
             top -= 1;
             left -= 1;
@@ -443,26 +440,17 @@ class PanelGrid {
         } else {
             width = `${width}`;
             height = `${height}-${Math.abs(yOffset)}`;
+
         }
 
-        if (
-            this.position.width === width &&
-            this.position.height === height &&
-            this.position.top === top &&
-            this.position.left === left
-        ) {
-            return;
-        }
-
-        this.maximizing = true;
-
-        for (const item of Object.values(this.items)) {
+        for (const item of this.activeItems) {
             item.switching = false;
             item.popover = false;
             item.promptOpen = false;
 
             if (item && item.parent) {
                 item.refreshCoords = true;
+
                 if (item.preResize) {
                     item.preResize(false, toGrid);
                 }
@@ -473,6 +461,16 @@ class PanelGrid {
             }
         }
 
+
+        if (
+            this.position.width === width &&
+            this.position.height === height &&
+            this.position.top === top &&
+            this.position.left === left
+        ) {
+            return;
+        }
+
         this.setPos({
             width,
             left,
@@ -480,32 +478,33 @@ class PanelGrid {
             height,
         });
 
-        this.gridActiveKeys = [];
+        this.maximizing = true;
 
         if (toGrid) {
             this.gridCount = this.activeKeys.length;
             this.gridActive = true;
-            this.noBorder = true;
 
             this.updateLabels();
             this.prepGridItems();
-
-            this.activeItem.border.type = 'heavy';
-            this.activeItem.style.border.type = 'heavy';
         }
 
         resize();
 
-        for (const item of Object.values(this.items)) {
+        this.resize();
+
+        for (const item of this.activeItems) {
             item.maximized = true;
         }
 
-        this.screen.render();
+        this.parent.debug(this.itemMap);
 
         setTimeout(() => {
             if (this.activeHelp) {
                 this.activeHelp.show();
             }
+
+            this.screen.render();
+
             this.maximizing = false;
         });
     }
@@ -514,20 +513,23 @@ class PanelGrid {
         item.panelGrid = false;
         item.maximized = false;
 
-        item.setPos({
-            width: '100%-2',
-            height: '100%-2',
-            left: 0,
-            top: 0,
-        });
+        item.position.width = '100%-2';
+        item.position.height = '100%-2';
+        item.position.left = 0; // this.gridActive ? -1 : 0;
+        item.position.top = 0; // this.gridActive ? -1 : 0;
 
-        item.style.border = {};
-
-        item.off('focus', item.gridFocus);
-
-        item.off('blur', item.gridBlur);
+        item._ileft = 0;
+        item._itop = 0;
+        item._iright = 0;
+        item._ibottom = 0;
+        item._iwidth = 0;
+        item._iheight = 0;
 
         item.border = null;
+        item.style.border = {}
+
+        item.off('focus', item.gridFocus);
+        item.off('blur', item.gridBlur);
 
         if (item._label) {
             item._label.destroy();
@@ -550,6 +552,8 @@ class PanelGrid {
             return;
         }
 
+        this.noBorder = false;
+
         if (
             this.position.width === width &&
             this.position.height === height &&
@@ -559,14 +563,25 @@ class PanelGrid {
             return;
         }
 
-        this.minimizing = true;
+        for (const item of this.activeItems) {
+            item._border = (item.border && { ...item.border }) || item._border;
+            item.border = null;
+            item.style.border = {}
 
-        if (
-            this.activeItem &&
-            !this.activeItem.hidden &&
-            this.activeItem.preResize
-        ) {
-            this.activeItem.preResize();
+            item.switching = false;
+            item.popover = false;
+            item.promptOpen = false;
+            item.maximized = false;
+            item.panelGrid = false;
+
+            this.unGridItem(item);
+
+            if (item !== this.activeItem && this.gridActive) {
+                item.hide();
+                item.resizeOnFocus = true;
+            } else if (item === this.activeItem && !this.activeItem.hidden && this.activeItem.preResize) {
+                this.activeItem.preResize();
+            }
         }
 
         this.setPos({
@@ -576,8 +591,7 @@ class PanelGrid {
             height,
         });
 
-        this.noBorder = false;
-
+        this.minimizing = true;
         this.nextTicks = [];
 
         if (minimizer) {
@@ -590,36 +604,10 @@ class PanelGrid {
 
         if (this.gridActive) {
             this.screen.ignoreLocked = [...this.screen.defIgnoreLocked];
-
-            for (const item of this.activeItems) {
-                item.switching = false;
-                item.popover = false;
-                item.promptOpen = false;
-                item.maximized = false;
-                item.panelGrid = false;
-
-                if (item === this.activeItem) {
-                    this.unGridItem(item);
-                } else {
-                    item.hide();
-
-                    this.nextTicks.push(() => {
-                        this.unGridItem(item);
-                        if (item.itemKey !== this.activeKey) {
-                            item.resizeOnFocus = true;
-                            if (item.itemKey !== 'main') {
-                                item.hide();
-                            }
-                        }
-                    });
-                }
-            }
-
             this.gridActive = false;
-
             this.gridCount = 0;
         } else {
-            for (const item of Object.values(this.items)) {
+            for (const item of this.activeItems) {
                 item.maximized = false;
 
                 if (item.itemKey !== this.activeKey) {
@@ -634,18 +622,14 @@ class PanelGrid {
         if (this.activeItem) {
             this.activeItem.resizeOnFocus = false;
 
-            if (minimizer) {
-                if (this.activeItem.resize) {
-                    this.activeItem.resize();
-                } else {
-                    this.activeItem.emit('resize');
-                }
-            } else {
-                this.activeItem.detach();
-                this.append(this.activeItem);
-            }
 
-            this.showItem(this.activeKey, true, minimizer);
+            if (this.activeItem.resize) {
+                this.activeItem.resize();
+            } else {
+                this.activeItem.emit('resize');
+
+                this.showItem(this.activeKey, true, minimizer);
+            }
         }
 
         if (!minimizer) {
@@ -653,7 +637,7 @@ class PanelGrid {
             this.onBlur();
         }
 
-        this.nextTicks.push(() => {
+        setTimeout(() => {
             this.updateLabels();
 
             if (!this.selected && !this.gridActive && this.activeHelp) {
@@ -661,15 +645,8 @@ class PanelGrid {
             }
 
             this.screen.render();
-        });
-
-        while (this.nextTicks.length) {
-            setTimeout(this.nextTicks.shift());
-        }
-
-        setTimeout(() => {
             this.minimizing = false;
-        }, 50);
+        });
     }
 }
 

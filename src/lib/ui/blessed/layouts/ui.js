@@ -1,9 +1,7 @@
 const blessed = require('blessed');
 const Grid = require('./grid');
 const cliCursor = require('cli-cursor');
-
-let renderTimeout = null;
-let renderTail = null;
+const throttle = require('lodash.throttle');
 
 blessed.Listbar.prototype._render = blessed.Element.prototype._render;
 
@@ -48,50 +46,25 @@ class UI extends Grid {
                 vertical: 2,
                 horizontal: 4,
             },
-            widthFn: ({
-                col,
-                cols,
-                colSpan,
-                width,
-                widthOffset,
-                widthSign,
-                parentWidth,
-            }) => {
-                if (colSpan > 1 && colSpan === cols) {
-                    return `100%`;
-                } else if (
-                    parentWidth < 200 &&
-                    col > 0 &&
-                    colSpan === 1 &&
-                    parentWidth % 2 !== 0
-                ) {
-                    return `${Math.ceil(width * colSpan)}%`;
-                } else if (
-                    parentWidth > 200 &&
-                    col > 0 &&
-                    colSpan === 1 &&
-                    parentWidth % 2 === 0
-                ) {
-                    return `${Math.ceil(width * colSpan)}%`;
-                } else {
-                    return `${Math.ceil(width * colSpan)}%${widthSign}${widthOffset !== 0 ? Math.abs(widthOffset) : ''
-                        }`;
+            widthFn: ({ colSpan, width, parentWidth }) => {
+                if (parentWidth < 200) {
+                    return `${Math.ceil(width * colSpan)}%-1`;
                 }
+                return `${Math.ceil(width * colSpan)}%`;
             },
-            heightFn: ({
-                row,
-                rows,
-                rowSpan,
-                height,
-                heightOffset,
-                heightSign,
-                parentHeight,
-            }) => {
-                if (row === 0 || (row > 0 && parentHeight % 2 !== 0)) {
-                    return `${Math.ceil(height * rowSpan)}%${heightSign}${heightOffset !== 0 ? Math.abs(heightOffset) : ''
-                        }`;
-                }
-            },
+            /*     heightFn: ({
+                     row,
+                     rowSpan,
+                     height,
+                     heightOffset,
+                     heightSign,
+                     parentHeight,
+                 }) => {
+                     if (row === 0 || (row > 0 && parentHeight % 2 !== 0)) {
+                         return `${Math.ceil(height * rowSpan)}%${heightSign}${heightOffset !== 0 ? Math.abs(heightOffset) : ''
+                             }`;
+                     }
+                 },*/
         };
 
         if (options.items.length === 1) {
@@ -218,6 +191,8 @@ class UI extends Grid {
 
         const isMaximized = item.maximized;
 
+        //    this.screen.emit('pre-resize');
+
         if (
             isMaximized &&
             (item.gridActive || (!item.gridActive && !panelGrid))
@@ -259,15 +234,7 @@ class UI extends Grid {
         this.oneMaximized = true;
         this.maximizedIndex = this.getItemIndex(key);
 
-        if (item.options.startTop === undefined) {
-            item.options.startTop = item.options.top || 0;
-            item.options.startLeft = item.options.left || 0;
-            item.options.startWidth = item.options.width;
-            item.options.startHeight = item.options.height;
-        }
-
         if (item.maximize) {
-            item.itemMaximized = true;
             item.maximize({
                 top: yOffset,
                 left: xOffset,
@@ -283,7 +250,6 @@ class UI extends Grid {
                 maximizer,
             });
         } else {
-            item.itemMaximized = false;
             item.top = yOffset;
             item.left = xOffset;
             item.width = `99%-${xOffset}`;
@@ -309,23 +275,22 @@ class UI extends Grid {
 
             if (item.minimize) {
                 item.minimize({
-                    top: item.options.startTop,
-                    left: item.options.startLeft,
-                    width: item.options.startWidth,
-                    height: item.options.startHeight,
+                    top: item.options.top,
+                    left: item.options.left,
+                    width: item.options.width,
+                    height: item.options.height,
                     minimizer,
                 });
             } else {
-                item.top = item.options.startTop;
-                item.left = item.options.startLeft;
-                item.width = item.options.startWidth;
-                item.height = item.options.startHeight;
+                item.top = item.options.top;
+                item.left = item.options.left;
+                item.width = item.options.width;
+                item.height = item.options.height;
             }
 
             if (minimizer) {
-                this.oneMaximized = false;
                 this.maximizedIndex = null;
-
+                this.oneMaximized = false;
                 this.showPage(this.currentPage);
 
                 if (gridActive) {
@@ -364,7 +329,7 @@ class UI extends Grid {
     }
 
     showPage(page) {
-        super.showPage(page, (child) => {
+        super.showPage(page, child => {
             if (this.oneMaximized) {
                 if (child.maximized) {
                     child.show();
@@ -393,7 +358,7 @@ class UI extends Grid {
                 });
                 */
 
-        this.on('resize-all', (item) => {
+        this.on('resize-all', item => {
             if (this.resizingAll) {
                 return;
             }
@@ -443,57 +408,32 @@ class UI extends Grid {
             this.fullRender();
         });
 
-        this.screen.key('M-x', () => {
-            if (
-                this.itemsOnPage() > 1 &&
-                this.processKeys &&
-                !this.screen.promptOpen &&
-                !this.maxMinTimeout &&
-                !this.navTimeout &&
-                !this.getItem(this.focusedIndex).preResizing
-            ) {
-                this.maxMinTimeout =
-                    this.maxMinTimeout ||
-                    setTimeout(() => {
-                        clearTimeout(this.maxMinTimeout);
-                        this.maxMinTimeout = null;
-                    }, 150);
+        this.screen.key(
+            ['M-x', 'escape'],
+            throttle((ch, key) => {
+                //if (key.full === 'M-x' || key.full === 'escape' || key.sequence === 'escape' || ch === 'escape') {
 
-                if (this.oneMaximized) {
-                    this.minimizeItem(this.focusedIndex, true);
-                } else {
-                    this.maximizeItem(this.focusedIndex, false, true);
+                if (this.processKeys && !this.screen.promptOpen) {
+                    if (this.oneMaximized) {
+                        this.minimizeItem(this.focusedIndex, true);
+                    } else if (
+                        this.itemsOnPage() > 1 &&
+                        key.full !== 'escape'
+                    ) {
+                        this.maximizeItem(this.focusedIndex, false, true);
+                    }
                 }
-            }
-        });
+            }, 150)
+        );
 
-        this.screen.key('M-S-x', () => {
-            if (
-                this.processKeys &&
-                !this.screen.promptOpen &&
-                !this.maxMinTimeout &&
-                !this.navTimeout &&
-                !this.getItem(this.focusedIndex).preResizing
-            ) {
-                this.maxMinTimeout =
-                    this.maxMinTimeout ||
-                    setTimeout(() => {
-                        clearTimeout(this.maxMinTimeout);
-                        this.maxMinTimeout = null;
-                    }, 150);
-
-                this.maximizeItem(this.focusedIndex, true, true);
-            }
-        });
-
-        this.screen.key(['M-left', 'M-right'], () => {
-            this.navTimeout =
-                this.navTimeout ||
-                setTimeout(() => {
-                    clearTimeout(this.navTimeout);
-                    this.navTimeout = null;
-                }, 150);
-        });
+        this.screen.key(
+            'M-S-x',
+            throttle((ch, key) => {
+                if (this.processKeys && !this.screen.promptOpen) {
+                    this.maximizeItem(this.focusedIndex, true, true);
+                }
+            }, 150)
+        );
     }
 
     get type() {

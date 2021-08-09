@@ -30,8 +30,8 @@ const blessed = require('blessed');
 
 blessed.Element.prototype._getWidth = function (get) {
     var parent = get
-            ? (this.options.positionParent || this.parent)._getPos()
-            : this.options.positionParent || this.parent,
+        ? (this.options.positionParent || this.parent)._getPos()
+        : this.options.positionParent || this.parent,
         width = this.position.width,
         left,
         expr;
@@ -124,7 +124,6 @@ blessed.Element.prototype._getHeight = function (get) {
             ) {
                 height -= (
                     this.options.positionParent ||
-                    this.options.positionParent ||
                     this.parent
                 ).itop;
             }
@@ -137,8 +136,8 @@ blessed.Element.prototype._getHeight = function (get) {
 
 blessed.Element.prototype._getLeft = function (get) {
     var parent = get
-            ? (this.options.positionParent || this.parent)._getPos()
-            : this.options.positionParent || this.parent,
+        ? (this.options.positionParent || this.parent)._getPos()
+        : this.options.positionParent || this.parent,
         left = (this.position && this.position.left) || 0,
         expr;
 
@@ -172,8 +171,8 @@ blessed.Element.prototype._getLeft = function (get) {
 
 blessed.Element.prototype._getRight = function (get) {
     var parent = get
-            ? (this.options.positionParent || this.parent)._getPos()
-            : this.options.positionParent || this.parent,
+        ? (this.options.positionParent || this.parent)._getPos()
+        : this.options.positionParent || this.parent,
         right;
 
     if (this.position.right == null && this.position.left != null) {
@@ -195,8 +194,8 @@ blessed.Element.prototype._getRight = function (get) {
 
 blessed.Element.prototype._getTop = function (get) {
     var parent = get
-            ? (this.options.positionParent || this.parent)._getPos()
-            : this.options.positionParent || this.parent,
+        ? (this.options.positionParent || this.parent)._getPos()
+        : this.options.positionParent || this.parent,
         top = (this.position && this.position.top) || 0,
         expr;
 
@@ -235,8 +234,8 @@ blessed.Element.prototype._getTop = function (get) {
 
 blessed.Element.prototype._getBottom = function (get) {
     var parent = get
-            ? (this.options.positionParent || this.parent)._getPos()
-            : this.options.positionParent || this.parent,
+        ? (this.options.positionParent || this.parent)._getPos()
+        : this.options.positionParent || this.parent,
         bottom;
 
     if (this.position.bottom == null && this.position.top != null) {
@@ -334,12 +333,51 @@ blessed.Element.prototype.__defineSetter__('abottom', function (val) {
     return (this.position.bottom = val);
 });
 
-blessed.Element.prototype.setPos = function (newPos) {
+
+
+
+blessed.Element.prototype.__defineGetter__('ileft', function () {
+    return this._ileft !== undefined ? this._ileft : (this.border && this.noBorder !== true ? 1 : 0) + this.padding.left;
+    // return (this.border && this.border.left ? 1 : 0) + this.padding.left;
+});
+
+blessed.Element.prototype.__defineGetter__('itop', function () {
+    return this._itop !== undefined ? this._itop : (this.border && this.noBorder !== true ? 1 : 0) + this.padding.top;
+    // return (this.border && this.border.top ? 1 : 0) + this.padding.top;
+});
+
+blessed.Element.prototype.__defineGetter__('iright', function () {
+    return this._iright !== undefined ? this._iright : (this.border && this.noBorder !== true ? 1 : 0) + this.padding.right;
+    // return (this.border && this.border.right ? 1 : 0) + this.padding.right;
+});
+
+blessed.Element.prototype.__defineGetter__('ibottom', function () {
+    return this._ibottom !== undefined ? this._ibottom : (this.border && this.noBorder !== true ? 1 : 0) + this.padding.bottom;
+    // return (this.border && this.border.bottom ? 1 : 0) + this.padding.bottom;
+});
+
+blessed.Element.prototype.__defineGetter__('iwidth', function () {
+    // return (this.border
+    //   ? ((this.border.left ? 1 : 0) + (this.border.right ? 1 : 0)) : 0)
+    //   + this.padding.left + this.padding.right;
+    return this._iwidth !== undefined ? this._iwidth : (this.border && this.noBorder !== true ? 2 : 0) + this.padding.left + this.padding.right;
+});
+
+blessed.Element.prototype.__defineGetter__('iheight', function () {
+    // return (this.border
+    //   ? ((this.border.top ? 1 : 0) + (this.border.bottom ? 1 : 0)) : 0)
+    //   + this.padding.top + this.padding.bottom;
+    return this._iheight !== undefined ? this._iheight : (this.border && this.noBorder !== true ? 2 : 0) + this.padding.top + this.padding.bottom;
+});
+
+blessed.Element.prototype.setPos = function (newPos, emit = true, clear = true) {
     let move = false;
     let resize = false;
 
     for (let [measure, val] of Object.entries(newPos)) {
+
         if (this.position[measure] !== val) {
+
             if (['top', 'left', 'bottom', 'right'].includes(measure)) {
                 move = true;
             } else if (['width', 'height'].includes(measure)) {
@@ -347,22 +385,29 @@ blessed.Element.prototype.setPos = function (newPos) {
             }
         }
     }
-    if (move) {
-        this.emit('move');
+
+    if (emit) {
+        if (move) {
+            this.emit('move');
+        }
+
+        if (resize) {
+            this.emit('resize');
+        }
     }
 
-    if (resize) {
-        this.emit('resize');
+    if (clear) {
+        this.clearPos();
     }
-
-    this.clearPos();
 
     for (let [measure, val] of Object.entries(newPos)) {
         if (this.position[measure] === val) {
             continue;
         }
 
-        if (/^\d+$/.test(val)) val = +val;
+        if (/^\d+$/.test(val)) {
+            val = +val;
+        }
 
         this.position[measure] = val;
     }

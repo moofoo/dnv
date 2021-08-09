@@ -4,7 +4,7 @@ const memoize = require('lodash.memoize');
 const merge = require('lodash.merge');
 
 const { specialTerminalOptions } = require('../../../../special-terms');
-const { e } = require('../../../patched/color/vscode/charCode');
+
 
 const testFn = memoize((FnOrClass) => {
     return Object.getOwnPropertyNames(FnOrClass).includes('caller');
@@ -54,11 +54,9 @@ class ItemActions {
         if (
             !this.gridActive &&
             this.activeKey !== 'main' &&
-            oldActiveKey === 'main'
+            oldActiveKey === 'main' && this.mainItem
         ) {
-            if (this.mainItem) {
-                this.mainItem.hide();
-            }
+            this.mainItem.hide();
         }
 
         if (this.activeItem) {
@@ -110,6 +108,13 @@ class ItemActions {
                 if (!adding) {
                     this.prepGridItems(true, adding);
                 }
+                setTimeout(() => {
+                    if (this.activeHelp) {
+                        this.activeHelp.show();
+                        this.screen.render();
+                    }
+                }, 50);
+
             } else {
                 this.parent.minimizeItem(this.key, true);
             }
@@ -204,6 +209,10 @@ class ItemActions {
             item = new Widget(opts);
         }
 
+
+
+
+
         item.panelGrid = this.gridActive;
 
         item.key = opts.key;
@@ -232,12 +241,14 @@ class ItemActions {
             'focus',
             function () {
                 const self = this;
+
                 setTimeout(function () {
                     if (
                         self === self.screen.focused &&
                         self.parent &&
                         self.parent.gridActive
                     ) {
+
                         self.parent.showItem(self, false, false, false);
                     }
                 }, 25);
@@ -255,11 +266,13 @@ class ItemActions {
                         self.parent.gridActive &&
                         !self.switching
                     ) {
+
                         self.parent.onBlur(false);
                     }
                 }, 25);
             }.bind(item)
         );
+
 
         item.on(
             'click',
@@ -282,6 +295,7 @@ class ItemActions {
         if (overrideBorder) {
             item.options.border = overrideBorder;
         }
+
 
         if (overrideLabel) {
             item.options.label = overrideLabel;
@@ -342,8 +356,9 @@ class ItemActions {
             (async () => {
                 await item.activate(this);
 
-                setTimeout(() =>
-                    this.showItem(itemKey, !this.gridActive, itemKey !== 'main')
+                setTimeout(() => {
+                    this.showItem(itemKey, !this.gridActive, itemKey !== 'main');
+                }
                 );
             })();
         } else {
@@ -378,6 +393,11 @@ class ItemActions {
                 (ro) => ro !== this.items[itemKey].options.packageName
             );
         }
+
+        this.activeKeys = this.activeKeys.filter((k) => {
+            return k !== itemKey;
+        });
+
         let next;
 
         if (this.gridActive) {
@@ -392,12 +412,7 @@ class ItemActions {
             next = this.activeKeys.indexOf(itemKey) - 1;
         }
 
-        next = this.activeKeys[next];
-
-        this.activeKeys = this.activeKeys.filter((k) => {
-            return k !== itemKey;
-        });
-
+        next = this.activeKeys[next < 0 ? 0 : next];
         this.showItem(next);
 
         if (this.panelLabels[itemKey]) {
@@ -454,6 +469,7 @@ class ItemActions {
             } else {
                 this.fullRender();
             }
+
         });
     }
 }

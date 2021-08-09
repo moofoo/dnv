@@ -50,7 +50,7 @@ const ansiHex = ansi256.reduce((acc, curr) => {
 
 const xtermAnsi = {};
 
-const checkColor = (color) => {
+const checkColor = color => {
     if (color >= 0 && color <= 255) {
         return color;
     }
@@ -64,7 +64,7 @@ const checkColor = (color) => {
     return null;
 };
 
-const badOrDefault = (color) => {
+const badOrDefault = color => {
     if (
         color === -1 ||
         color === 0x1ff ||
@@ -94,7 +94,7 @@ blessed.colors.isXterm = (color, layer = 'fg') => {
             isXterm =
                 layer === 'fg'
                     ? AttributeData.isFgPalette(color) ||
-                      AttributeData.isFgRGB(color)
+                    AttributeData.isFgRGB(color)
                     : AttributeData.isBgPalette(color);
         }
     } else {
@@ -146,74 +146,60 @@ blessed.colors.darken = memoize(
         return nearestColor(...Color.fromArray(rgb).darken(factor).rgbArray);
     },
     (color, factor, layer) =>
-        `${
-            color && color.toString
-                ? color.toString()
-                : color === undefined || color === null
+        `${color && color.toString
+            ? color.toString()
+            : color === undefined || color === null
                 ? 'u'
                 : color
         }${factor}${layer}`
 );
 
-blessed.colors.convert = memoize(
-    (color, layer = 'fg') => {
-        if (badOrDefault(color)) {
-            //return 0x1ff;
-            if (layer === 'fg') {
-                return 15;
+const undef = (val = 'u') => {
+    return val && val.toString
+        ? val.toString()
+        : val === undefined || val === null
+            ? 'u'
+            : val;
+};
+
+blessed.colors.convert = (color, layer = 'fg') => {
+    if (badOrDefault(color)) {
+        if (layer === 'fg') {
+            return 15;
+        } else {
+            return 0;
+        }
+    }
+
+    const cachedMaybe = checkColor(color);
+
+    if (cachedMaybe !== null) {
+        return cachedMaybe;
+    }
+
+    let isXterm = false;
+
+    if (typeof color === 'number' && color > 255) {
+        isXterm = blessed.colors.isXterm(color, layer);
+
+        if (isXterm) {
+            color = AttributeData.toColorRGB(color);
+        } else {
+            const blessedNum =
+                layer === 'fg' ? (color >> 9) & 0x1ff : color & 0x1ff;
+
+            if (blessedNum <= 255) {
+                return blessedNum;
             } else {
-                return 0;
-            }
-        }
-
-        const cachedMaybe = checkColor(color);
-
-        if (cachedMaybe !== null) {
-            return cachedMaybe;
-        }
-
-        let isXterm = false;
-
-        if (typeof color === 'number' && color > 255) {
-            isXterm = blessed.colors.isXterm(color, layer);
-
-            if (isXterm) {
                 color = AttributeData.toColorRGB(color);
-            } else {
-                const blessedNum =
-                    layer === 'fg' ? (color >> 9) & 0x1ff : color & 0x1ff;
-
-                if (blessedNum <= 255) {
-                    return blessedNum;
-                } else {
-                    color = AttributeData.toColorRGB(color);
-                }
             }
         }
+    }
 
-        if (typeof color === 'string') {
-            color = color.replace(/[\- ]/g, '');
-            if (blessed.colors.colorNames[color] != null) {
-                color = blessed.colors.colorNames[color];
-            } else {
-                color = blessed.colors.match(
-                    color,
-                    null,
-                    null,
-                    layer,
-                    isXterm,
-                    false
-                );
-            }
-        } else if (Array.isArray(color)) {
-            color = blessed.colors.match(
-                color[0],
-                color[1],
-                color[2],
-                layer,
-                isXterm,
-                false
-            );
+    if (typeof color === 'string') {
+        color = color.replace(/[\- ]/g, '');
+        if (blessed.colors.colorNames[color] != null) {
+            color = blessed.colors.colorNames[color];
         } else {
             color = blessed.colors.match(
                 color,
@@ -224,110 +210,113 @@ blessed.colors.convert = memoize(
                 false
             );
         }
-
-        return color !== -1 ? color : 0x1ff;
-    },
-    (color, layer) =>
-        `${
-            color && color.toString
-                ? color.toString()
-                : color === undefined || color === null
-                ? 'u'
-                : color
-        }${layer}`
-);
-
-blessed.colors.match = function (
-    r1,
-    g1,
-    b1,
-    layer = 'fg',
-    isXterm,
-    getRGB = false
-) {
-    if (badOrDefault(r1)) {
-        if (layer === 'fg') {
-            return getRGB ? ansi256[15].rgb : 15;
-        } else {
-            return getRGB ? ansi256[0].rgb : 0;
-        }
+    } else if (Array.isArray(color)) {
+        color = blessed.colors.match(
+            color[0],
+            color[1],
+            color[2],
+            layer,
+            isXterm,
+            false
+        );
+    } else {
+        color = blessed.colors.match(color, null, null, layer, isXterm, false);
     }
 
-    if (!getRGB) {
-        const cachedMaybe = checkColor(r1);
-
-        if (cachedMaybe !== null) {
-            return cachedMaybe;
-        }
-    }
-
-    isXterm =
-        isXterm !== undefined ? isXterm : blessed.colors.isXterm(color, layer);
-
-    let hex;
-    let xtermNum;
-
-    if (typeof r1 === 'string') {
-        hex = r1;
-
-        if (hex[0] !== '#') {
-            return -1;
-        }
-
-        [r1, g1, b1] = blessed.colors.hexToRGB(hex);
-    } else if (Array.isArray(r1)) {
-        (b1 = r1[2]), (g1 = r1[1]), (r1 = r1[0]);
-    } else if (typeof color === 'number' && r1 > 255) {
-        if (isXterm) {
-            xtermNum = r1;
-            [r1, g1, b1] = AttributeData.toColorRGB(r1);
-        } else {
-            const blessedNum = layer === 'fg' ? (r1 >> 9) & 0x1ff : r1 & 0x1ff;
-
-            if (blessedNum <= 255) {
-                return blessedNum;
-            } else {
-                xtermNum = r1;
-                [r1, g1, b1] = AttributeData.toColorRGB(r1);
-            }
-        }
-    }
-
-    if (getRGB) {
-        return [r1, g1, b1];
-    }
-
-    var hash = (r1 << 16) | (g1 << 8) | b1;
-
-    if (blessed.colors._cache[hash] != null) {
-        return blessed.colors._cache[hash];
-    }
-
-    const nearest = nearestColor(r1, g1, b1);
-
-    blessed.colors._cache[hash] = nearest;
-
-    if (hex && !ansiHex[hex]) {
-        ansiHex[hex] = {
-            ansi: nearest,
-            hex,
-            rgb: [r1, g1, b1],
-        };
-    }
-
-    if (xtermNum && !xtermAnsi[xtermNum]) {
-        xtermAnsi[xtermNum] = {
-            ansi: nearest,
-            rgb: [r1, g1, b1],
-        };
-    }
-
-    return nearest;
+    return color !== -1 ? color : 0x1ff;
 };
 
-blessed.colors.vcolors = ansi256.map((entry) => entry.hex);
+blessed.colors.match = memoize(
+    function (r1, g1, b1, layer = 'fg', isXterm, getRGB = false) {
+        if (badOrDefault(r1)) {
+            if (layer === 'fg') {
+                return getRGB ? ansi256[15].rgb : 15;
+            } else {
+                return getRGB ? ansi256[0].rgb : 0;
+            }
+        }
 
-blessed.colors.colors = ansi256.map((entry) => entry.rgb);
+        if (!getRGB) {
+            const cachedMaybe = checkColor(r1);
+
+            if (cachedMaybe !== null) {
+                return cachedMaybe;
+            }
+        }
+
+        isXterm =
+            isXterm !== undefined
+                ? isXterm
+                : blessed.colors.isXterm(color, layer);
+
+        let hex;
+        let xtermNum;
+
+        if (typeof r1 === 'string') {
+            hex = r1;
+
+            if (hex[0] !== '#') {
+                return -1;
+            }
+
+            [r1, g1, b1] = blessed.colors.hexToRGB(hex);
+        } else if (Array.isArray(r1)) {
+            (b1 = r1[2]), (g1 = r1[1]), (r1 = r1[0]);
+        } else if (typeof color === 'number' && r1 > 255) {
+            if (isXterm) {
+                xtermNum = r1;
+                [r1, g1, b1] = AttributeData.toColorRGB(r1);
+            } else {
+                const blessedNum =
+                    layer === 'fg' ? (r1 >> 9) & 0x1ff : r1 & 0x1ff;
+
+                if (blessedNum <= 255) {
+                    return blessedNum;
+                } else {
+                    xtermNum = r1;
+                    [r1, g1, b1] = AttributeData.toColorRGB(r1);
+                }
+            }
+        }
+
+        if (getRGB) {
+            return [r1, g1, b1];
+        }
+
+        var hash = (r1 << 16) | (g1 << 8) | b1;
+
+        if (blessed.colors._cache[hash] != null) {
+            return blessed.colors._cache[hash];
+        }
+
+        const nearest = nearestColor(r1, g1, b1);
+
+        blessed.colors._cache[hash] = nearest;
+
+        if (hex && !ansiHex[hex]) {
+            ansiHex[hex] = {
+                ansi: nearest,
+                hex,
+                rgb: [r1, g1, b1],
+            };
+        }
+
+        if (xtermNum && !xtermAnsi[xtermNum]) {
+            xtermAnsi[xtermNum] = {
+                ansi: nearest,
+                rgb: [r1, g1, b1],
+            };
+        }
+
+        return nearest;
+    },
+    (r1, g1, b1, layer = 'fg', isXterm, getRGB = false) =>
+        `${undef(r1)}${undef(g1)}${undef(b1)}${layer}${isXterm}${getRGB}`
+);
+
+blessed.colors.vcolors = ansi256.map(entry => entry.hex);
+
+blessed.colors.colors = ansi256.map(entry => entry.rgb);
 
 blessed.colors.reduce = function (color) {
     return color;
