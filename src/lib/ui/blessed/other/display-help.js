@@ -94,7 +94,7 @@ const gridHelp = (screen) => {
     heading(left, 'General UI');
     command(left, 'Exit UI', 'Ctrl + q');
     command(left, 'Select Service Panel', 'Ctrl + Shift + Direction');
-    command(left, 'Select Service Sub-Panel', 'Ctrl + Direction');
+    command(left, 'Select Service Sub-Panel', 'Ctrl or Alt + Direction');
     command(left, 'Close/Exit Sub-Panel', 'Ctrl + z');
     command(left, 'Maximize Panel', 'Alt + x');
     command(left, 'Display Log and Sub-Panels in a Grid', 'Alt + Shift + x');
@@ -151,7 +151,7 @@ const gridHelp = (screen) => {
     command(middle, 'Triple Click', 'Select Line');
     command(middle, 'Incremental Select', 'Ctrl + Left Button');
     command(middle, 'Move Cursor (if visible)', 'Alt + Left Button');
-    command(middle, 'Open Actions Menu', 'Right click in focused panel');
+    command(middle, 'Open Actions Menu', 'Right click in focused log panel');
 
     return container;
 };
