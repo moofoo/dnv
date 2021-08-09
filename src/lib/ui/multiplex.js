@@ -126,8 +126,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
     let watchingFiles = false;
 
-    let cName;
-
     Object.keys(services).forEach((name) => {
         if (services[name].watching) {
             watchingFiles = true;
@@ -1165,6 +1163,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         'home',
         'end',
         'M-x',
+        'escape'
     ];
 
     screen.defIgnoreLocked = [...screen.ignoreLocked];
@@ -1202,7 +1201,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         }
     });
 
-    let destroyTimeout;
+
 
     const close = () => {
         screen.userClose = true;

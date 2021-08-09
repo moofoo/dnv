@@ -66,6 +66,8 @@ class PanelBase extends blessed.Box {
         this._popover = false;
         this._switching = false;
 
+        this.noBorder = false;
+
         this.render = this.render.bind(this);
         this.debug = this.debug.bind(this);
         this.activate = this.activate.bind(this);
@@ -225,30 +227,23 @@ class PanelBase extends blessed.Box {
     }
 
     _getPos() {
-        let noPos = !!this.lpos;
-
-        var pos = this.lpos || this.lastPos;
+        var pos = this.lpos;
 
         // assert.ok(pos);
 
-        if (!pos && this.lastPos) {
-            pos = this.lastPos;
+        if (!this.lpos) {
+            this.noPos = true;
         } else {
+            this.noPos = false;
+        }
+
+        if (pos) {
             this.lastPos = pos;
+        } else if (this.lastPos) {
+            return this.lastPos;
         }
 
-        if (!pos) {
-            return {
-                aleft: 0,
-                atop: 0,
-                aright: 0,
-                abottom: 0,
-                width: 0,
-                height: 0,
-            };
-        }
-
-        if (pos.aleft != null && !noPos) return pos;
+        if (pos && pos.aleft != null) return pos;
 
         pos.aleft = pos.xi;
         pos.atop = pos.yi;
@@ -350,8 +345,9 @@ class PanelBase extends blessed.Box {
                     if (this.actionHelp[itemKey]) {
                         const help = this.actionHelp[item.itemKey];
 
+
                         help.abottom = this.gridActive
-                            ? item.abottom - (item.ibottom + 1)
+                            ? this.items[itemKey].abottom // - (this.items[itemKey].ibottom + 2)
                             : this.abottom - 1;
 
                         help.right = this.gridActive
@@ -422,6 +418,7 @@ class PanelBase extends blessed.Box {
             this.screen.render();
         } else {
             this.fullRender();
+
         }
     }
 
@@ -514,6 +511,10 @@ class PanelBase extends blessed.Box {
             this.fullRender();
         } else {
             this.screen.render();
+        }
+
+        if (this._border) {
+            this._border = { ...this.border };
         }
     }
 

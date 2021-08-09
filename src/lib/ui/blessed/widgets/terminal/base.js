@@ -73,6 +73,8 @@ class XTerminal extends blessed.ScrollableBox {
 
         super(options);
 
+        this.noScrollbar = true;
+
         this.options.sendFocus = true;
         this.options.autoFocus = false;
         this.options.mouseFocus = true;
@@ -137,8 +139,8 @@ class XTerminal extends blessed.ScrollableBox {
             this.options.hideCursor !== undefined
                 ? this.options.hideCursor
                 : ['shell', 'program'].includes(this.options.termType)
-                ? false
-                : true;
+                    ? false
+                    : true;
 
         this.options.scrollback = this.options.scrollback
             ? Number(this.options.scrollback)
@@ -187,7 +189,12 @@ class XTerminal extends blessed.ScrollableBox {
         this.removeAllListeners('render');
         this.removeAllListeners('attach');
         this.removeAllListeners('resize');
+
+        this._border = { ...this.border };
+
+
     }
+
 
     get clickable() {
         if (this.ready) {
@@ -351,11 +358,11 @@ class XTerminal extends blessed.ScrollableBox {
         };
 
         this._term._core.viewport = {
-            syncScrollArea: () => {},
+            syncScrollArea: () => { },
         };
 
-        this._term._core._keyDown = () => {};
-        this._term._core._keyPress = () => {};
+        this._term._core._keyDown = () => { };
+        this._term._core._keyPress = () => { };
 
         this._term.loadAddon(new Unicode11Addon());
         this._term.unicode.activeVersion = '11';
@@ -478,6 +485,10 @@ class XTerminal extends blessed.ScrollableBox {
     }
 
     hasSelection() {
+        if (!this.term) {
+            return false;
+        }
+
         return this.term.hasSelection();
     }
 
@@ -518,6 +529,10 @@ class XTerminal extends blessed.ScrollableBox {
 
         if (this._term && this.disposed) {
             this._term.reset();
+
+            if (this.disposeCursorMove) {
+                this.disposeCursorMove.dispose();
+            }
 
             if (this._search) {
                 this._search.dispose();

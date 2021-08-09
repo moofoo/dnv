@@ -4,7 +4,6 @@ const stripAnsi = require('strip-ansi');
 const CALLBACK_BYTE_LIMIT = 100000;
 const HIGH = 50;
 const LOW = 5;
-
 class TerminalWriting {
     initializer() {
         this.bufferedData = [];
@@ -52,15 +51,12 @@ class TerminalWriting {
 
         if (this.formatter) {
             data = this.formatter(data, this);
-        } else if (this.options.format) {
-            data = this.options.format(data, this);
-        } else if (this.format) {
-            data = this.format(data, this);
         }
 
         if (data === '') {
             return false;
         }
+
         let newlines;
 
         if (this.freeze) {

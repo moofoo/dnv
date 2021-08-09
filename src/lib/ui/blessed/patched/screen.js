@@ -516,7 +516,7 @@ blessed.Screen.prototype._listenKeys = function (el) {
                 try {
                     self.focusEmit.emit('keypress', ch, key);
                     self.focusEmit.emit('key ' + key.full, ch, key);
-                } catch (err) {}
+                } catch (err) { }
             }
             return;
         }
@@ -1031,4 +1031,85 @@ blessed.Screen.prototype._focus = function (self, old) {
     }
 
     self.emit('focus', old);
+};
+
+
+
+blessed.Screen.prototype.postEnter = function () {
+    var self = this;
+    if (this.options.debug) {
+        this.debugLog = new blessed.Log({
+            screen: this,
+            parent: this,
+            hidden: true,
+            draggable: true,
+            left: 'center',
+            top: 'center+2',
+            width: '50%',
+            height: '50%',
+            border: 'line',
+            label: ' {bold}Debug Log{/bold} ',
+            tags: true,
+            keys: true,
+            vi: true,
+            mouse: true,
+            scrollbar: {
+                ch: ' ',
+                track: {
+                    bg: 'yellow'
+                },
+                style: {
+                    inverse: true
+                }
+            },
+            style: {
+                bg: 'black',
+                fg: 'white'
+            }
+        });
+
+        this.debugLog.toggle = function () {
+            if (self.debugLog.hidden) {
+                self.saveFocus();
+                self.debugLog.show();
+                self.debugLog.setFront();
+                self.debugLog.focus();
+            } else {
+                self.debugLog.hide();
+                self.restoreFocus();
+            }
+            self.render();
+        };
+
+        this.debugLog.key(['q', 'escape'], self.debugLog.toggle);
+        this.key('f12', self.debugLog.toggle);
+    }
+
+    if (this.options.warnings) {
+        this.on('warning', function (text) {
+            var warning = new Box({
+                screen: self,
+                parent: self,
+                left: 'center',
+                top: 'center',
+                width: 'shrink',
+                padding: 1,
+                height: 'shrink',
+                align: 'center',
+                valign: 'middle',
+                border: 'line',
+                label: ' {red-fg}{bold}WARNING{/} ',
+                content: '{bold}' + text + '{/bold}',
+                tags: true
+            });
+            self.render();
+            var timeout = setTimeout(function () {
+                warning.destroy();
+                self.render();
+            }, 1500);
+            if (timeout.unref) {
+                timeout.unref();
+            }
+        });
+    }
 };

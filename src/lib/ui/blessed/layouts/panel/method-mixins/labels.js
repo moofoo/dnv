@@ -76,8 +76,8 @@ class PanelLabels {
         const chalkFn =
             active || this.activeKey === itemKey
                 ? this.items[itemKey] &&
-                  (this.items[itemKey].focused ||
-                      (itemKey !== 'main' && this.items[itemKey].selected))
+                    (this.items[itemKey].focused ||
+                        (itemKey !== 'main' && this.items[itemKey].selected))
                     ? chalkHex('#f9ff00')
                     : chalkHex('#a77a0f')
                 : chalkHex('#9d9d9d');
@@ -102,6 +102,8 @@ class PanelLabels {
             return chalkFn(text);
         }
 
+
+
         let dashColor = this.getDashColor();
 
         if (dashColor.includes('#')) {
@@ -116,15 +118,20 @@ class PanelLabels {
     updateLabels() {
         let length = this.mainItem
             ? this.panelLabels['main'] &&
-              this.panelLabels['main'].getText().length
+            this.panelLabels['main'].getText().length
             : 0;
 
-        const startLength = length;
-
-        let rightReached = false;
-
         for (const [index, plabel] of this.activeLabels.entries()) {
+
+            if (this.gridActive) {
+
+                plabel.hide();
+            }
+
+
             if (plabel.itemKey !== 'main') {
+
+
                 plabel.left = 1 + length;
 
                 const labelContent = this.getLabelContent(plabel.itemKey);
@@ -134,6 +141,7 @@ class PanelLabels {
                 length += plabel.getText().length;
             }
         }
+
     }
 
     updateMainLabel(text) {

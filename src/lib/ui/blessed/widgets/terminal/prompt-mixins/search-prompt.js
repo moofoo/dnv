@@ -288,7 +288,7 @@ class SearchPrompt {
             const selection = this.getSelectionPosition();
             const dim = this.dimensions;
 
-            if (selection && selection.endRow >= dim.top + dim.rows + 1) {
+            if (selection && selection.endRow >= this.getScroll() + dim.rows + 1) {
                 this.scroll(1);
             }
 

@@ -21,7 +21,7 @@ class TerminalEvents {
             if (this.term && this.term.hasSelection() && this.mouseSelecting) {
                 try {
                     clipboardy.writeSync(this.selectionText.trimRight());
-                } catch {}
+                } catch { }
             }
         });
 
@@ -33,7 +33,7 @@ class TerminalEvents {
             ) {
                 try {
                     this.pty.write(clipboardy.readSync());
-                } catch {}
+                } catch { }
             }
         });
 
@@ -168,8 +168,6 @@ class TerminalEvents {
     initTerminalStateEvents() {
         this.on('resize', this.debouncedResize);
         this.on('attach', () => {
-            this.lastParent = this.parent;
-
             this.resize(true);
 
             this.firstAttach = false;
@@ -180,22 +178,18 @@ class TerminalEvents {
         });
 
         this.on('focus', () => {
+
             if (!this.parent || !this.term) {
                 return;
             }
 
+
+
             if (this.resizeOnFocus) {
                 this.resizeOnFocus = false;
                 this.preResize();
-                setTimeout(() => {
-                    this.resize(true);
-                });
-            }
+                this.resize(true);
 
-            if (this.options.termType === 'process' && this.hidden) {
-                process.nextTick(() => {
-                    this.show();
-                });
             }
 
             this.screen.grabKeys = false;
@@ -226,6 +220,7 @@ class TerminalEvents {
                 if (this.mouseSelecting && !this.focused) {
                     this.clearSelection();
                 }
+
             }, 250);
 
             if (this.onBlurEvent) {
@@ -250,6 +245,16 @@ class TerminalEvents {
             this.persisting = false;
             this.dispose(true);
         });
+
+
+        this.disposeCursorMove = this.term.onCursorMove(() => {
+            if (this.options.cursorBlink && !this.options.hideCursor) {
+                this.blinking = true;
+            }
+        });
+
+
+
     }
 
     initTerminalKeyEvents() {

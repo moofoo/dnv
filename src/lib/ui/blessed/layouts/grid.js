@@ -80,6 +80,8 @@ class Grid extends blessed.Box {
             trailing: true,
         });
 
+        this._border = { ...this.border };
+
         this.initEvents();
 
         if (!this.options.parentActivate) {
@@ -94,6 +96,8 @@ class Grid extends blessed.Box {
         } else if (!this.options.parentActivate) {
             this.postInit();
         }
+
+
     }
 
     get type() {
@@ -758,8 +762,6 @@ class Grid extends blessed.Box {
 
             if (page > 0) {
                 const itemsOnPage = this.itemsOnPage(page);
-
-                this.debug(`page ${page} onpage ${itemsOnPage}`);
 
                 if (itemsOnPage === 1) {
                     rowSpan = 2;
@@ -1444,11 +1446,10 @@ class Grid extends blessed.Box {
     }
 
     debug(text, clear = false, diff = false) {
-        /*     if (1 === 1) {
-                 return;
-             }
-             */
+
+
         if (this.parent !== this.screen && this.parent.debug) {
+
             this.parent.debug(text, clear, diff);
             return;
         }
@@ -1471,6 +1472,13 @@ class Grid extends blessed.Box {
         }
 
         if (diff && this.lastText === JSON.stringify(text)) {
+            return;
+        }
+
+        if (this.screen.options.debug === true) {
+            //     this.screen.once('keypress', () => this.screen.debugLog.toggle());
+            //   this.screen.debugLog.toggle();
+            this.screen.debugLog.add(text);
             return;
         }
 
@@ -1497,6 +1505,12 @@ class Grid extends blessed.Box {
         var pos = this.lpos;
 
         // assert.ok(pos);
+
+        if (!this.lpos) {
+            this.noPos = true;
+        } else {
+            this.noPos = false;
+        }
 
         if (pos) {
             this.lastPos = pos;

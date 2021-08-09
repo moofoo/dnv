@@ -49,6 +49,13 @@ class TerminalMarkdownType {
         });
 
         this.startScrollPerc = 0;
+
+        this.on('focus', () => {
+            if (this.maximized && this.parent) {
+                this.preResize();
+                this.resize(true);
+            }
+        })
     }
 
     get uiType() {
@@ -88,13 +95,12 @@ class TerminalMarkdownType {
 
         this.setScrollPerc(0);
 
-        setTimeout(() => {
-            this.ready = true;
+        this.ready = true;
 
-            if (this.onReady) {
-                this.onReady(this);
-            }
-        });
+        if (this.onReady) {
+            this.onReady(this);
+        }
+
     }
 
     loadContent() {

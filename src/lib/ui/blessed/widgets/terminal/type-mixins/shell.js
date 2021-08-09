@@ -179,16 +179,17 @@ class TerminalShellType {
 
     set cursorBlinking(value) {
         if (
-            this.options.cursorBlink &&
-            (!this._cursorBlinkOn || !this.cursorBlinkTimeout)
+            this.options.cursorBlink
         ) {
-            clearInterval(this.cursorBlinkTimeout);
 
+            clearInterval(this.cursorBlinkTimeout);
             if (value) {
                 this.cursorBlinkTimeout = setInterval(() => {
                     if (this.term) {
                         this.blinking = !this.blinking;
-                        this.termRender(null, true);
+                        if (!this.hidden && this.screen.focused === this) {
+                            this.termRender();
+                        }
                     }
                 }, 450);
             }
@@ -353,8 +354,7 @@ class TerminalShellType {
         this.pty.on(
             'data',
             getTermBufferer(
-                `${this.id}${this.options.termType}${
-                    this.options.shellType || ''
+                `${this.id}${this.options.termType}${this.options.shellType || ''
                 }`,
                 this.onPtyData,
                 true
@@ -447,8 +447,12 @@ class TerminalShellType {
     }
 
     shellStdinOn() {
-        if (this.options.cursorBlink) {
-            this.cursorBlinking = true;
+        if (this.writable) {
+            if (this.options.cursorBlink && this.screen.focused === this) {
+                this.cursorBlinking = true;
+            }
+
+            this.muteStream.unmute();
         }
 
         this.screen.ignoreLocked = [
@@ -470,6 +474,7 @@ class TerminalShellType {
             'end',
             'M-x',
             'C-q',
+            'escape'
         ];
 
         if (this.options.termType === 'shell') {
@@ -482,10 +487,11 @@ class TerminalShellType {
                 'S-pagedown',
                 'C-pageup',
                 'C-pagedown',
+                'escape'
             ].forEach((key) => this.screen.ignoreLocked.push(key));
         }
 
-        this.muteStream.unmute();
+
     }
 
     shellStdinOff() {
@@ -500,9 +506,8 @@ class TerminalShellType {
 
     shellStdinToggle(on = true) {
         if (on) {
-            if (this.writable) {
-                this.shellStdinOn();
-            }
+            this.shellStdinOn();
+
         } else {
             this.shellStdinOff();
         }
@@ -519,12 +524,12 @@ class TerminalShellType {
     checkControlExitSeq(key) {
         if (
             !this.destroyed &&
-            ['C-q', 'C-c', 'C-d', 'C-z', 'q'].includes(key.full)
+            ['C-q', 'C-c', 'C-d', 'C-z'].includes(key.full)
         ) {
             const CtrlQ = key.full === 'C-q';
             const CtrlC = key.full === 'C-c';
             const CtrlZ = key.full === 'C-z';
-            const q = key.full === 'q';
+
 
             if (CtrlQ) {
                 this.screen.emit('close prompt');
@@ -547,38 +552,37 @@ class TerminalShellType {
                 return true;
             }
 
-            if (this.options.termType === 'program') {
-                if (CtrlZ || q) {
+
+            if (CtrlZ) {
+
+                if (this.options.termType === 'program') {
+
                     this.userClose = true;
                     this.persisting = false;
 
                     this.pty.write('\u001b');
 
-                    if (!q) {
-                        this.pty.write('q');
-                        this.pty.write('\n');
-                    }
 
                     this.pty.write('\u0003');
-                }
-            } else if (this.options.termType === 'shell') {
-                if (this.options.shellType === 'repl') {
-                    if (CtrlZ) {
+
+                } else if (this.options.termType === 'shell') {
+                    if (this.options.shellType === 'repl') {
+
                         this.userClose = true;
                         this.persisting = false;
 
                         this.pty.write('\u0003');
                         this.pty.write('.exit');
                         this.pty.write('\n');
-                    }
-                } else if (this.shellProgram) {
-                    if (CtrlZ) {
+
+                    } else if (this.shellProgram) {
+
                         this.pty.write('\u0003');
                         this.shellProgram = false;
                         return false;
-                    }
-                } else if (this.onCommandLine) {
-                    if (CtrlZ) {
+
+                    } else if (this.onCommandLine) {
+
                         this.userClose = true;
                         this.persisting = false;
 
@@ -586,6 +590,7 @@ class TerminalShellType {
                         this.pty.write('\nexit\n');
 
                         return false;
+
                     }
                 }
             }
@@ -595,6 +600,7 @@ class TerminalShellType {
     }
 
     input(ch, key, data) {
+
         if (
             this.screen.focused !== this ||
             !this.writable ||
@@ -617,15 +623,15 @@ class TerminalShellType {
 
         const pagedownup = this.doKeyScroll(full, key)
             ? [
-                  'M-pagedown',
-                  'C-pagedown',
-                  'S-pagedown',
-                  'M-pageup',
-                  'C-pageup',
-                  'S-pageup',
-                  'pageup',
-                  'pagedown',
-              ]
+                'M-pagedown',
+                'C-pagedown',
+                'S-pagedown',
+                'M-pageup',
+                'C-pageup',
+                'S-pageup',
+                'pageup',
+                'pagedown',
+            ]
             : [];
 
         if (full) {
@@ -645,6 +651,10 @@ class TerminalShellType {
                     'M-S-x',
                 ].includes(full)
             ) {
+                return;
+            }
+
+            if (this.panelGrid && full === 'escape') {
                 return;
             }
 
@@ -675,22 +685,31 @@ class TerminalShellType {
                         this.pty.write(ch);
                     }
                 }
-            } else {
-                setTimeout(() => {
-                    this.termRender();
-                });
+
+
+
             }
+
+
         }
     }
 
-    resizePty() {
+    resizePty(delayed = false) {
         if (!this.options.pty) {
             return;
         }
 
-        if (this.pty && this.writable) {
+        if (delayed === false && !this.cols) {
+            setTimeout(() => this.resizePty(true));
+            return;
+        };
+
+
+        if (this.cols > 0 && this.pty && this.writable) {
             this.pty.resize(this.cols, this.rows);
+
         }
+
     }
 
     updateInputLine(data) {
@@ -879,8 +898,7 @@ class TerminalShellType {
     disposeShell() {
         if (this.shell) {
             stopBuffering(
-                `${this.id}${this.options.termType}${
-                    this.options.shellType || ''
+                `${this.id}${this.options.termType}${this.options.shellType || ''
                 }`
             );
 

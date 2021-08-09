@@ -4,8 +4,6 @@
 const blessed = require('blessed');
 const nextTick = global.setImmediate || process.nextTick.bind(process);
 const sgr = require('./sgr');
-const memoize = require('lodash.memoize');
-const debounce = require('lodash.debounce');
 const boxStyles = require('./borders');
 
 // work-around for https://github.com/chjj/blessed/issues/175
@@ -315,6 +313,9 @@ blessed.Element.prototype.render = function (renderContent = true) {
         this.screen._borderStops[coords.yl - 1] = true;
     }
 
+
+
+
     dattr = this.sattr(this.style);
     attr = dattr;
 
@@ -505,16 +506,22 @@ blessed.Element.prototype.render = function (renderContent = true) {
         // i = this.getScrollHeight();
         i = Math.max(this._clines.length, this._scrollBottom());
     }
+
     if (coords.notop || coords.nobot) i = -Infinity;
     if (this.scrollbar && this.noScrollbar !== true && yl - yi < i) {
         x = xl - 1;
-        if (this.scrollbar.ignoreBorder && this.border) x++;
+
+        if (this.scrollbar.ignoreBorder && this.border) {
+            x++;
+        }
+
 
         if (this.alwaysScroll) {
             y = this.childBase / (i - (yl - yi));
         } else {
             y = (this.childBase + this.childOffset) / (i - 1);
         }
+
         y = yi + (((yl - yi) * y) | 0);
         if (y >= yl) y = yl - 1;
 
@@ -540,10 +547,16 @@ blessed.Element.prototype.render = function (renderContent = true) {
                 lines[y][x][1] = ch;
                 lines[y].dirty = true;
             }
+
+
+
+
         }
     }
 
-    if (this.border && this.noBorder !== true) xi--, xl++, yi--, yl++;
+
+
+    if (this.border) { xi--, xl++, yi--, yl++; }
 
     if (this.tpadding) {
         (xi -= this.padding.left), (xl += this.padding.right);
@@ -573,8 +586,11 @@ blessed.Element.prototype.render = function (renderContent = true) {
         boxStyle = boxStyles.light;
     }
 
+    const noBorder = this.noBorder !== undefined ? this.noBorder : false;
+
     coords.notop = false;
-    if (this.border && this.noBorder !== true) {
+
+    if (this.border && !noBorder) {
         battr = this.sattr(this.style.border || this);
 
         const originalAttr = battr;
@@ -1028,7 +1044,7 @@ blessed.Element.prototype.isInside = function (x, y) {
 
     try {
         pos = this._getPos();
-    } catch {}
+    } catch { }
 
     if (!pos) {
         return false;
@@ -1050,7 +1066,7 @@ blessed.Element.prototype.isOutside = function (x, y) {
 
     try {
         pos = this._getPos();
-    } catch {}
+    } catch { }
 
     if (!pos) {
         if (this.lastOutPos) {

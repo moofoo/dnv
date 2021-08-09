@@ -62,6 +62,7 @@ class PanelHelp {
             key: 'helpbox',
             parent: this.gridActive ? this.items[itemKey] : this,
             screen: this.screen,
+
             right: this.gridActive
                 ? this.items[itemKey].right - (this.items[itemKey].iright - 1)
                 : this.iright + 1,
@@ -74,7 +75,7 @@ class PanelHelp {
         helpContainer.itemKey = itemKey;
 
         helpContainer.abottom = this.gridActive
-            ? this.items[itemKey].abottom - (this.items[itemKey].ibottom + 1)
+            ? this.items[itemKey].abottom // - (this.items[itemKey].ibottom + 2)
             : this.abottom - 1;
 
         helpContainer.setFront();
@@ -103,8 +104,8 @@ class PanelHelp {
         let showKeys = Array.isArray(help.keys)
             ? false
             : help.showKeys !== undefined
-            ? help.showKeys
-            : false;
+                ? help.showKeys
+                : false;
 
         for (const [key, act] of Object.entries(help.keys)) {
             if (helpContainer.children[helpContainer.children.length - 1]) {

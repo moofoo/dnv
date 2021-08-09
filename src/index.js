@@ -8,17 +8,16 @@ const main = async () => {
 
     await config.setup();
 
+
     if (!config.dockerRunning || !config.isOnline) {
         const chalk = require('chalk');
         const logSymbols = require('log-symbols');
         let msg = chalk.red('Startup Error') + ': ';
 
-        msg += `${
-            config.dockerRunning ? logSymbols.success : logSymbols.error
-        } Docker Daemon Running`;
-        msg += ` ${
-            config.isOnline ? logSymbols.success : logSymbols.error
-        } Online`;
+        msg += `${config.dockerRunning ? logSymbols.success : logSymbols.error
+            } Docker Daemon Running`;
+        msg += ` ${config.isOnline ? logSymbols.success : logSymbols.error
+            } Online`;
 
         console.error(msg);
         process.exit(0);

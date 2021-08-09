@@ -90,8 +90,6 @@ class TerminalResizing {
         this.clearSelection();
 
         this.resizing = true;
-        this.refreshCoords = true;
-
         this.startRows = this.startRows || this.lastRows;
         this.startCols = this.startCols || this.lastCols;
 
@@ -218,6 +216,10 @@ class TerminalResizing {
     }
 
     resizeTerm() {
+        if (!this.term) {
+            return
+        }
+
         if ((this.filter && this.filter !== '') || this.stayFiltered) {
             this._filterTerm.resize(this.cols, this.rows);
         } else {

@@ -8,7 +8,7 @@ class TerminalDimensionsScrolling {
             this.width -
             this.iwidth -
             (this.options.termType === 'program' &&
-            this.options.shellType !== 'script'
+                this.options.shellType !== 'script'
                 ? 0
                 : 1);
 
@@ -49,6 +49,12 @@ class TerminalDimensionsScrolling {
         var pos = this.lpos;
 
         // assert.ok(pos);
+
+        if (!this.lpos) {
+            this.noPos = true;
+        } else {
+            this.noPos = false;
+        }
 
         if (pos) {
             this.lastPos = pos;
@@ -199,8 +205,8 @@ class TerminalDimensionsScrolling {
 
         return this.term.buffer.active.baseY > 0
             ? (this.term.buffer.active.viewportY /
-                  this.term.buffer.active.baseY) *
-                  100
+                this.term.buffer.active.baseY) *
+            100
             : 100;
     }
 

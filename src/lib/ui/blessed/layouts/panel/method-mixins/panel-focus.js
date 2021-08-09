@@ -3,9 +3,10 @@ class PanelFocus {
         if (this.selected && this.activeKeys.length > 1) {
             this.subPanelSelect = true;
 
-            if (this.activeItem && this.activeItem.popover) {
+            if (!this.activeItem || (this.activeItem && this.activeItem.popover)) {
                 return;
             }
+
             if (!this.gridActive && this.activeItem && this.activeItem.blur) {
                 this.activeItem.blur();
             }
@@ -13,6 +14,8 @@ class PanelFocus {
             if (this.items[itemKey]) {
                 this.items[itemKey].focus();
             }
+
+            this.fullRender();
 
             process.nextTick(() => {
                 this.subPanelSelect = false;
@@ -127,7 +130,7 @@ class PanelFocus {
 
         const lastRowItem =
             this.itemMap[this.itemMap.length - 1][
-                this.itemMap[this.itemMap.length - 1].length - 1
+            this.itemMap[this.itemMap.length - 1].length - 1
             ];
 
         if (leftItem) {

@@ -54,7 +54,13 @@ class Stats extends blessed.Box {
         }, {});
 
         this.initStatsEvents();
+
+        this._border = { ...this.border };
+
+
+
     }
+
 
     get freeze() {
         if (this.lineGraph) {
@@ -137,8 +143,8 @@ class Stats extends blessed.Box {
                 }
 
                 const metrics = this.options.metrics;
-                const mapper = (rows) => {
-                    return map(rows, (row) => {
+                const mapper = rows => {
+                    return map(rows, row => {
                         return metrics.reduce((acc, curr) => {
                             return {
                                 [curr]: row.metrics[curr],
@@ -251,13 +257,13 @@ class Stats extends blessed.Box {
             }
         });
 
-        this.on('mousemove', (data) => {
+        this.on('mousemove', data => {
             if (data.dragging && this.doMouseEvent()) {
                 this.mouseData = data;
             }
         });
 
-        this.on('connection data', (parsed) => {
+        this.on('connection data', parsed => {
             if (parsed && this.parent) {
                 this.emit('metrics', parsed);
             }
