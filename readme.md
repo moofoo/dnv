@@ -337,14 +337,14 @@ If you choose 'yes' for `Restart containers when source files change?`, then DNV
 ```console
  General UI                                                                Filtering                                                  │
 │  Exit UI                                      Ctrl + q                    Submit / Cancel            Enter / Escape                 │
-│  Select Service Panel                         Ctrl + Direction            Clear prompt               Ctrl + x                       │
-│  Select Service Sub-Panel                     Alt + Direction             Cycle prior filters        Ctrl + Up / Down               │
+│  Select Service Panel                         Ctrl + Shift + Direction    Clear prompt               Ctrl + x                       │
+│  Select Service Sub-Panel                     Ctrl or Alt + Direction     Cycle prior filters        Ctrl + Up / Down               │
 │  Close/Exit Sub-Panel                         Ctrl + z                    Clear filter               Ctrl + g                       │
 │  Maximize Panel                               Alt + x                                                                               │
 │  Display Log and Sub-Panels in a Grid         Alt + Shift + x             Exec / Scripts                                            │
 │  Minimize Panel / Close Sub-Panel Grid        Alt + x                     Run selection              Enter                          │
-│  Next Services Page                           Ctrl + Shift + Right        Show arguments input       Space                          │
-│  Prev Services Page                           Ctrl + Shift + Left                                                                   │
+│                                                                           Show arguments input       Space                          │
+
 │  Select Services Page                         F1 -> F8                    Panel Actions (like Action, Search, Filter etc)           │
 │  Scroll Up Log                                Up, Shift-Up, Page-Up       Run Action                 Ctrl + indicated letter        │
 │  Scroll Down Log                              Down, Shift-Down, Page-Down                                                           │
