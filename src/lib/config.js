@@ -3,6 +3,7 @@ const isOnline = require('is-online');
 const execa = require('execa');
 const { files } = require('./files');
 const isDockerRunning = require('./docker/docker-running');
+const { getNodeImage } = require('./docker/images');
 const parseArgs = require('minimist');
 
 const argv = parseArgs(process.argv);
@@ -55,6 +56,8 @@ class Config extends Conf {
         this.isOnline = online;
         this.yarnVersion = yarnVer;
         this.dockerRunning = dockerRunning;
+        this.hasNodeImage = this.dockerRunning ? !!(await getNodeImage()) : false;
+
     }
 
     get(key, defaultVal) {
@@ -144,7 +147,7 @@ class Config extends Conf {
             if (
                 (projectConfig[key] === 'default' ||
                     JSON.stringify(projectConfig[key]) ===
-                        JSON.stringify(answers[key])) &&
+                    JSON.stringify(answers[key])) &&
                 JSON.stringify(config[key]) === JSON.stringify(answers[key])
             ) {
                 projectConfig[key] === 'default';
@@ -180,8 +183,8 @@ class Config extends Conf {
         if (!config) {
             throw new Error(
                 'setProjectConfigProp called on nonexistent config ' +
-                    key +
-                    value
+                key +
+                value
             );
         }
 
@@ -266,7 +269,7 @@ class Config extends Conf {
                 ...previous,
                 [isDefault && showDefault ? current + '__default' : current]:
                     projectConfig[current] === undefined ||
-                    projectConfig[current] === 'default'
+                        projectConfig[current] === 'default'
                         ? def
                         : projectConfig[current],
             };

@@ -9,7 +9,7 @@
     },
     "preferGlobal": true,
     "scripts": {
-        "preuninstall": "node ./src/preuninstall.js"
+        "preuninstall": "src/preuninstall.js"
     },
     "author": {
         "name": "Nathan Cook",

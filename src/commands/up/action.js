@@ -165,13 +165,14 @@ const optionProcessing = async (opts) => {
 
     const cf = regen
         ? ComposeFile.getInstance(
-              composeFile,
-              path,
-              true,
-              projectName,
-              externalVolume,
-              yarnVersion
-          )
+            composeFile,
+            path,
+            true,
+            projectName,
+            externalVolume,
+            null,
+            yarnVersion
+        )
         : opts;
 
     opts.hasUser = cf.hasUser;
@@ -640,15 +641,12 @@ const setupNodeUser = (opts) => {
 const initWatchFiles = (opts) => {
     let { services, progressMsg, watchFiles, watchIgnore } = opts;
 
-    if (1 === 1) {
-        return opts;
-    }
 
     watchIgnore = !watchIgnore
         ? []
         : Object.values(watchIgnore)
-              .map((wi) => wi.enabled && wi.value)
-              .filter((val) => val);
+            .map((wi) => wi.enabled && wi.value)
+            .filter((val) => val);
 
     if (
         (watchFiles && !Array.isArray(watchFiles)) ||

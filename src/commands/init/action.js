@@ -58,8 +58,8 @@ const getPrompt = async (key, opts, services) => {
     const answers = !useDefaults
         ? await inquirer.prompt([prompt])
         : {
-              [key]: defaults[key],
-          };
+            [key]: defaults[key],
+        };
 
     let { [key]: answerValue } = answers;
 
@@ -67,8 +67,8 @@ const getPrompt = async (key, opts, services) => {
         answerValue === 'default'
             ? defaults[key]
             : answerValue === defaults[key]
-            ? 'default'
-            : answerValue;
+                ? 'default'
+                : answerValue;
 
     return answerValue;
 };
@@ -565,6 +565,7 @@ const composeFilePrompts = async (opts) => {
         true,
         projectName,
         externalVolume,
+        packageManager,
         yarnVersion
     );
 
@@ -590,7 +591,8 @@ const composeFilePrompts = async (opts) => {
             files.cwd,
             true,
             projectName,
-            false,
+            externalVolume,
+            packageManager,
             yarnVersion
         );
     }

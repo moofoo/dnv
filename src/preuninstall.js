@@ -5,14 +5,11 @@ const { removeDnvVolumes } = require('../../lib/docker/volumes');
 const { removeDnvNetworks } = require('../../lib/docker/networks');
 const { removeContainerImages } = require('../../lib/docker/images');
 
-const configs = config.getAllProjectConfigs() || [];
-
 async function deleteConfig(env = process.env) {
+    const configs = config.getAllProjectConfigs() || [];
+
     const argv = env.npm_config_argv || '{}';
     const { original = [] } = JSON.parse(argv);
-
-    // The `preuninstall` hook also runs when the package gets updated to a new version (i.e. npm update -g jenni).
-    // But we should Delete the config only when Jenni gets uninstalled explicitly. (i.e. npm uninstall -g jenni)
 
     if (!original.includes('uninstall')) return;
 

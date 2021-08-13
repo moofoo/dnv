@@ -19,6 +19,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         parse = true,
         projectName = null,
         externalVolume = false,
+        packageManager = 'npm',
         yarnVersion = null
     ) {
         filename = path.basename(filename);
@@ -32,6 +33,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
                 parse,
                 projectName,
                 externalVolume,
+                packageManager,
                 yarnVersion
             );
 
@@ -59,6 +61,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         parse = true,
         projectName = null,
         externalVolume = false,
+        packageManager = 'npm',
         yarnVersion = null
     ) {
         super();
@@ -67,6 +70,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         this.cwd = cwd;
         this.path = cwd + '/' + filename;
         this.externalVolume = externalVolume;
+        this.packageManager = packageManager;
         this.yarnVersion = yarnVersion;
 
         this.composeFileTime = files.fileTime(this.path);
@@ -172,10 +176,14 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
 
             let hostPath;
 
-            if (command && command.includes('npm')) {
+            if (this.packageManager) {
+                service.packageManager = this.packageManager;
+            } else if (command && command.includes('npm')) {
                 service.packageManager = 'npm';
             } else if (command && command.includes('yarn')) {
                 service.packageManager = 'yarn';
+            } else {
+                service.packageManager = 'npm';
             }
 
             service.yarnVersion = this.yarnVersion;

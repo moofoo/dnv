@@ -9,15 +9,20 @@ const main = async () => {
     await config.setup();
 
 
-    if (!config.dockerRunning || !config.isOnline) {
+    if (!config.dockerRunning || !config.isOnline || !config.hasNodeImage) {
         const chalk = require('chalk');
         const logSymbols = require('log-symbols');
         let msg = chalk.red('Startup Error') + ': ';
 
-        msg += `${config.dockerRunning ? logSymbols.success : logSymbols.error
-            } Docker Daemon Running`;
         msg += ` ${config.isOnline ? logSymbols.success : logSymbols.error
-            } Online`;
+            } Online  `;
+
+        msg += `${config.dockerRunning ? logSymbols.success : logSymbols.error
+            } Docker Daemon Running  `;
+
+        msg += `${config.hasNodeImage ? logSymbols.success : logSymbols.error
+            } Node Image(s) Present`;
+
 
         console.error(msg);
         process.exit(0);
