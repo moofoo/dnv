@@ -628,8 +628,6 @@ const installGlobals = async opts => {
         if (globals.length) {
             const { newVolume, containerName, shortPath } = service;
 
-            console.log('newVolume, buildCmd, newBuild', newVolume, buildCmd, newBuild, areNew);
-
             if (!((externalVolume && newVolume) || buildCmd || newBuild)) {
                 if (areNew.length) {
                     globals = areNew;

@@ -123,6 +123,7 @@ const populateAndInstall = ({
             dotFile,
             modulesDir,
             serviceName,
+            yarnVersion
         } = service;
 
         workingDir = modulesDir || `${workingDir}/node_modules`;
@@ -141,7 +142,7 @@ const populateAndInstall = ({
             packageManager === 'yarn' &&
             ((managerFiles.dot &&
                 managerFiles.dot.host.includes('.yarnrc.yml')) ||
-                config.yarnVersion >= 2)
+                yarnVersion >= 2 || config.yarnVersion >= 2)
         ) {
             yarn2 = true;
         }

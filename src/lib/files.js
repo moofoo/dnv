@@ -88,7 +88,14 @@ class Files extends EventEmitter {
     getFullFile(file, cwd) {
         cwd = cwd || this.cwd;
 
-        if (file && file.includes(cwd)) {
+        if (typeof file !== 'string') {
+            return cwd;
+        }
+
+
+
+
+        if (file && file.includes && file.includes(cwd)) {
             return file;
         }
 
@@ -116,11 +123,11 @@ class Files extends EventEmitter {
             return this.cwd;
         }
 
-        let path = this.getFullFile(file, cwd);
+        let aPath = this.getFullFile(file, cwd);
 
-        path = path.substr(0, path.lastIndexOf(sep));
+        aPath = aPath.substr(0, aPath.lastIndexOf(sep));
 
-        return path.substr(0, path.lastIndexOf('/'));
+        return aPath.substr(0, aPath.lastIndexOf('/'));
     }
 
     getFileName(file) {
@@ -230,10 +237,10 @@ class Files extends EventEmitter {
         return packageManager === 'npm'
             ? 'package-lock.json'
             : packageManager === 'yarn'
-            ? 'yarn-lock.json'
-            : packageManager === 'pnpm'
-            ? 'pnpm-lock.yml'
-            : '';
+                ? 'yarn-lock.json'
+                : packageManager === 'pnpm'
+                    ? 'pnpm-lock.yml'
+                    : '';
     }
 
     getNpmFiles(packageManager = 'npm', cwd) {
@@ -374,12 +381,14 @@ class Files extends EventEmitter {
                 const formatted = format(dir);
                 const pkgJsonPath = thePath + '/' + 'package.json';
 
+                thePath = this.getFullFile(thePath);
+
                 return [
                     ...acc,
                     {
                         path: thePath,
                         shortPath: this.getShortPath(thePath),
-                        pkgJson: pkgJsonPath,
+                        pkgJson: thePath + '/package.json',
                         dir,
                         formatted,
                     },

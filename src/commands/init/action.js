@@ -11,7 +11,6 @@ const { files } = require('../../lib/files');
 
 const cleanProject = require('../clear/all');
 
-
 const getPackageManagerPrompt = require('../config/prompts/packageManager');
 const getDockerImagePrompt = require('../config/prompts/dockerfileNodeImage');
 const getComposeImagePrompt = require('../config/prompts/composeNodeImage');
@@ -25,7 +24,11 @@ let createdComposeFile = false;
 let repoPaths = [];
 let done = false;
 
-const getShortPath = (p) => {
+const getShortPath = p => {
+    if (typeof p !== 'string') {
+        files.getFullFile(p = p.path);
+    }
+
     let base = path.basename(p);
     if (/\w+\.\w+/.test(base)) {
         p = p.replace('/' + base, '');
@@ -106,7 +109,7 @@ const resetPrompt = async (opts = {}) => {
     return opts;
 };
 
-const checkForExisting = async (opts) => {
+const checkForExisting = async opts => {
     opts.existingCompose = false;
     opts.composeFile = `${files.cwd}/docker-compose.yml`;
 
@@ -191,8 +194,8 @@ const dependencyMessage = () => {
     }
 };
 
-const dependencyPrompts = async (opts) => {
-    const { repoPaths, multiRepo } = opts;
+const dependencyPrompts = async opts => {
+    const { repoPaths, multiRepo, workingDir } = opts;
 
     let packageManager = await getPrompt('packageManager', opts);
 
@@ -218,8 +221,19 @@ const dependencyPrompts = async (opts) => {
         paths = repoPaths;
     }
 
-    for (const nodePath of paths) {
-        const shortPath = getShortPath(nodePath);
+    for (const np of paths) {
+        let nodePath;
+        let shortPath;
+
+
+        if (typeof np === 'object') {
+            nodePath = files.getFullFile(np.path);
+            shortPath = getShortPath(nodePath);
+
+        } else {
+            shortPath = getShortPath(np);
+            nodePath = np;
+        }
 
         if (packageManager === 'yarn') {
             let yarnLock = 'yarn.lock';
@@ -266,7 +280,7 @@ const dependencyPrompts = async (opts) => {
                 }
 
                 if (yarnVersion >= 2) {
-                    const packageJson = files.getPackageJson();
+                    const packageJson = files.getPackageJson(nodePath);
 
                     const deps = Object.keys(packageJson.dependencies || {});
 
@@ -322,6 +336,8 @@ const dependencyPrompts = async (opts) => {
             if (!fs.existsSync(nodePath + '/package-lock.json')) {
                 dependencyMessage();
 
+
+
                 const { npmInstall } = await inquirer.prompt({
                     type: 'confirm',
                     name: 'npmInstall',
@@ -333,14 +349,22 @@ const dependencyPrompts = async (opts) => {
                     process.exit(0);
                 }
 
-                const { stdout } = execa.commandSync(
-                    'npm install --update-notifier=false --progress=false --fund=false --audit=false --color=false --strict-ssl=false --prefer-offline=true',
-                    {
-                        cwd: nodePath,
-                    }
+                const { stdout } = await execa(
+                    'npm',
+                    [
+                        'install',
+                        '--update-notifier=false',
+                        '--progress=false',
+                        '--fund=false',
+                        '--audit=false',
+                        '--color=false',
+                        '--strict-ssl=false',
+                        '--prefer-offline=true',
+                    ],
+                    { cwd: nodePath }
                 );
 
-                stdout.split('\n').forEach((line) => {
+                stdout.split('\n').forEach(line => {
                     if (line.includes(' packages in ')) {
                         console.log(line + '\n');
                     }
@@ -362,8 +386,8 @@ const startupSetOpts = async (opts = {}) => {
         dockerfileNodeImage: await getDockerImagePrompt(true, true),
         packageManager: getPackageManagerPrompt(true, true),
         workingDir: getWorkingDirPrompt(true, true),
-        watchFiles: (services) => getWatchFilesPrompt(true, true, services),
-        uiStats: (services) => getUiStatsPrompt(true, true, services),
+        watchFiles: services => getWatchFilesPrompt(true, true, services),
+        uiStats: services => getUiStatsPrompt(true, true, services),
     };
 
     const defaults = config.get('defaultConfig');
@@ -383,34 +407,68 @@ const startupSetOpts = async (opts = {}) => {
     return opts;
 };
 
-const repoPathPrompts = async (opts) => {
-    // Disable this feature for now
-    if (!files.hasPackageJson()) {
+const repoPathPrompts = async opts => {
+    const hasPkgJson = files.hasPackageJson();
+
+    let repoPaths = (await files.getMultiRepoPaths()) || [];
+    let multiRepo = false;
+
+    if (hasPkgJson) {
+        repoPaths.push({
+            path: files.cwd,
+            shortPath: files.getShortPath(files.cwd),
+            pkgJson: `${files.cwd}/package.json`,
+            dir: files.getDir(files.cwd),
+            formatted: files.getFormattedDir(files.cwd),
+        });
+    } else if (!hasPkgJson && repoPaths.length > 0) {
+        const { isMultiRepo } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'isMultiRepo',
+            message:
+                'Multiple package.json files found in sub-directories. Does this project run more than one Node service?',
+        });
+
+        multiRepo = isMultiRepo;
+
+        if (multiRepo) {
+            const choices = repoPaths.map(mr => mr.dir);
+
+            const { dirs } = await inquirer.prompt([
+                {
+                    type: 'checkbox',
+                    name: 'dirs',
+                    choices,
+                    message:
+                        'Select the directories with Node applications. Each will become a service in the compose file',
+                },
+            ]);
+
+            repoPaths = repoPaths.filter(data => {
+                if (dirs.includes(data.dir)) {
+                    return true;
+                }
+            });
+        } else if (!hasPkgJson) {
+            error('package.json not found');
+            process.exit(0);
+        }
+    } else if (!hasPkgJson && (!repoPaths || repoPaths.length === 0)) {
         error('package.json not found');
         process.exit(0);
     }
 
-    if (opts.existingCompose) {
-        opts.multiRepo = false;
-        opts.repoPaths = [];
-        return opts;
+    if (multiRepo) {
+        repoPaths = repoPaths.filter(rp => {
+            return rp.path !== process.cwd()
+        })
     }
 
-    const repoPaths = [];
-
-    repoPaths.push({
-        path: files.cwd,
-        shortPath: files.getShortPath(files.cwd),
-        pkgJson: `${files.cwd}/package.json`,
-        dir: files.getDir(files.cwd),
-        formatted: files.getFormattedDir(files.cwd),
-    });
-
-    opts.multiRepo = false;
+    opts.multiRepo = multiRepo;
     opts.repoPaths = repoPaths;
     return opts;
 
-    /*  repoPaths = (await files.getMultiRepoPaths()) || [];
+    /*
 
     let multiRepo = false;
 
@@ -419,7 +477,7 @@ const repoPathPrompts = async (opts) => {
             type: 'confirm',
             name: 'isMultiRepo',
             message:
-                'Multiple package.json files found in sub-directories. Does this project have more than one Node service',
+                'Multiple package.json files found in sub-directories. Does this project run more than one Node service?',
         });
 
         multiRepo = isMultiRepo;
@@ -465,7 +523,7 @@ const repoPathPrompts = async (opts) => {
     */
 };
 
-const newDockerfilePrompts = async (opts) => {
+const newDockerfilePrompts = async opts => {
     const workingDir = await getPrompt('workingDir', opts);
     const dockerfileNodeImage = await getPrompt('dockerfileNodeImage', opts);
 
@@ -484,8 +542,8 @@ const newDockerfilePrompts = async (opts) => {
     return opts;
 };
 
-const createDockerfilePrompts = async (opts) => {
-    const { repoPaths, existingCompose } = opts;
+const createDockerfilePrompts = async opts => {
+    const { repoPaths, existingCompose, multiRepo } = opts;
 
     if (existingCompose) {
         opts.createdDockerFile = false;
@@ -513,6 +571,8 @@ const createDockerfilePrompts = async (opts) => {
             nodeImage: getValue('dockerfileNodeImage', dockerfileNodeImage),
             workingDir: getValue('workingDir', workingDir),
             nodeUser: opts.nodeUser,
+            multiRepo,
+            dir: data.formatted,
         });
 
         repoPaths[index].dockerfile = dPath + '/' + dockerfileName;
@@ -525,7 +585,7 @@ const createDockerfilePrompts = async (opts) => {
     return opts;
 };
 
-const composeFilePrompts = async (opts) => {
+const composeFilePrompts = async opts => {
     let {
         composeFile,
         existingCompose,
@@ -553,6 +613,7 @@ const composeFilePrompts = async (opts) => {
             multiRepo,
             dockerfiles: repoPaths,
             composeFile,
+            yarnVersion,
         });
 
         createdComposeFile = true;
@@ -664,8 +725,6 @@ const composeFilePrompts = async (opts) => {
 
     cf.updateConfig(opts);
 
-
-
     if (opts.createdDockerFile) {
         console.log('Creating Dockerfile...');
     }
@@ -677,7 +736,7 @@ const composeFilePrompts = async (opts) => {
     return opts;
 };
 
-const initProjectConfig = async (opts) => {
+const initProjectConfig = async opts => {
     const {
         composeNodeImage,
         composeFile,

@@ -76,9 +76,6 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
         externalVolume,
     } = projectConfig;
 
-    uiStats =
-        packageManager === 'yarn' && config.yarnVersion > 2 ? [] : uiStats;
-
     // The defaults here are TERM=xterm-256color and LC_ALL=C.UTF-8
     // LC_ALL=C.UTF-8 is particularly important for getting unicode to display correctly.
     // C.UTF-8 is universally supported (I think) and does the trick.
@@ -304,7 +301,7 @@ const multiplex = async (projectConfig, services, stop, screen, scrollback) => {
 
                     if (watchingFiles) {
                         containerItems.push(
-                            `watching ${getWatchCount()} path(s)`
+                            ` watching ${getWatchCount()} path(s)`
                         );
                     }
 

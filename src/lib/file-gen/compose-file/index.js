@@ -20,7 +20,8 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         projectName = null,
         externalVolume = false,
         packageManager = 'npm',
-        yarnVersion = null
+        yarnVersion = null,
+        multiRepo = false
     ) {
         filename = path.basename(filename);
 
@@ -34,7 +35,8 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
                 projectName,
                 externalVolume,
                 packageManager,
-                yarnVersion
+                yarnVersion,
+                multiRepo
             );
 
             return cf;
@@ -62,7 +64,8 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         projectName = null,
         externalVolume = false,
         packageManager = 'npm',
-        yarnVersion = null
+        yarnVersion = null,
+        multiRepo = false
     ) {
         super();
 
@@ -72,10 +75,11 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         this.externalVolume = externalVolume;
         this.packageManager = packageManager;
         this.yarnVersion = yarnVersion;
+        this.multiRepo = multiRepo;
 
         this.composeFileTime = files.fileTime(this.path);
 
-        let [content, services] = this.configComposeFile({ cwd });
+        let [content, services] = this.configComposeFile(this.cwd);
 
         if (!content) {
             content = fs.readFileSync(this.path, 'utf8');
@@ -94,7 +98,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
                 }
             }
 
-            this.projectName = projectName || files.getFormattedDir(cwd);
+            this.projectName = projectName || files.getFormattedDir(this.cwd);
 
             this.json = json;
 
@@ -104,9 +108,11 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         } else {
             throw new Error('Error reading docker-compose.yml');
         }
+
+
     }
 
-    configComposeFile({ cwd = files.cwd }) {
+    configComposeFile(cwd = files.cwd) {
         let output;
 
         try {
@@ -115,7 +121,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
                 stdio: 'pipe',
             });
         } catch (err) {
-            return null;
+            return [];
         }
 
         if (output.stdout) {

@@ -33,15 +33,16 @@ class ComposeParseHelpers {
     }
 
     getDotFile(packageManager = 'npm', yarnVersion = null) {
-        return packageManager === 'npm' || packageManager === 'pnpm'
-            ? '.npmrc'
-            : packageManager === 'yarn'
-                ? yarnVersion
-                    ? yarnVersion > 2
-                    : config.yarnVersion > 2
-                        ? '.yarnrc.yml'
-                        : '.yarnrc'
-                : '';
+        if (packageManager === 'npm' || packageManager === 'pnpm') {
+            return '.npmrc'
+        } else if (packageManager === 'yarn') {
+
+            if (yarnVersion < 2) {
+                return '.yarnrc'
+            } else {
+                return '.yarnrc.yml';
+            }
+        }
     }
 
     testForNode(serviceOptions) {
@@ -133,8 +134,8 @@ class ComposeParseHelpers {
         for (const path of servicePaths) {
             const host = df.localLookup[path];
 
-            const lockFile = this.getLockFile(service.packageManager);
-            const dotFile = this.getDotFile(service.packageManager);
+            const lockFile = this.getLockFile(service.packageManager, service.yarnVersion);
+            const dotFile = this.getDotFile(service.packageManager, service.yarnVersion);
 
             service.lockFile = lockFile;
             service.dotFile = dotFile;
@@ -174,7 +175,7 @@ class ComposeParseHelpers {
         if (
             (managerFiles.dot &&
                 managerFiles.dot.host.includes('.yarnrc.yml')) ||
-            config.yarnVersion > 2
+            (service.yarnVersion >= 2 || config.yarnVersion >= 2)
         ) {
             for (const path of pkgPaths) {
                 const host = df.localLookup[path];

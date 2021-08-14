@@ -550,11 +550,15 @@ class DockerFile {
     static createGenericDockerfile({
         nodeImage = null,
         packageManager = 'npm',
+        yarnVersion = 1,
         script = 'start',
         filename = 'Dockerfile',
         workingDir = '/usr/src/app',
         cwd = files.cwd,
         nodeUser = false,
+        multiRepo = false,
+        dir = '',
+
     }) {
         if (nodeImage === null) {
             throw new Error('createGenericDockerfile nodeImage option missing');
@@ -564,8 +568,8 @@ class DockerFile {
 
         const install =
             packageManager === 'npm'
-                ? `RUN ${packageManager} install --update-notifier=false --progress=false --fund=false --audit=false --color=false\n\n`
-                : `RUN ${packageManager} install\n\n`;
+                ? `${packageManager} install --update-notifier=false --progress=false --fund=false --audit=false --color=false\n\n`
+                : `${packageManager} install\n\n`;
 
         if (packageManager === 'yarn') {
             if (fs.existsSync(`${cwd}/.yarnrc.yml`)) {
@@ -596,6 +600,18 @@ class DockerFile {
         contents += `WORKDIR ${workingDir}\n\n`;
 
         contents += `${copy}`;
+
+        dir = multiRepo ? workingDir + '/' + dir : workingDir;
+
+        if (packageManager === 'npm') {
+            contents += `RUN --mount=type=cache,target=${dir}/node_modules --mount=type=cache,id=npm,target=~/.npm \\\n`;
+        } else if (packageManager === 'yarn') {
+            if (yarnVersion < 2) {
+                contents += `RUN --mount=type=cache,target=${dir}/node_modules --mount=type=cache,id=npm,target=~/.cache/yarn/v6 \\\n`;
+            } else {
+                contents += `RUN --mount=type=cache,target=${dir}/.yarn/cache \\\n`;
+            }
+        }
 
         contents += `${install}`;
 

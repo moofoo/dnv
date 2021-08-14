@@ -331,7 +331,7 @@ class ComposeStatic {
                 multiRepo ? `./${dir}:${workingDir}` : `.:${workingDir}`,
             ];
 
-            if (packageManager === 'yarn' && config.yarnVersion >= 2) {
+            if (packageManager === 'yarn' && yarnVersion >= 2) {
                 volumes.push(`${workingDir}/.yarn`);
             } else {
                 volumes.push(`${workingDir}/node_modules`);
@@ -347,8 +347,12 @@ class ComposeStatic {
                 dockerfile.lastIndexOf('/') + 1
             );
 
-            if (dockerfile !== `./${dockerfileName}`) {
-                build.context = dockerfile.replace(`/${dockerfileName}`, '');
+            if (multiRepo) {
+                build.context = `./${dir}`;
+                build.dockerfile = dockerfileName;
+            } else if (dockerfile !== `./${dockerfileName}`) {
+                const dfile = dockerfile.replace(`/${dockerfileName}`, '');
+                build.context = dfile;
                 build.dockerfile = dockerfileName;
             }
 

@@ -22,7 +22,7 @@ class DnvComposeFile {
         composeFile = 'docker-compose.yml',
         cwd = files.cwd,
         cf = null,
-        projectName = null
+        projectName = null,
     ) {
         filename = path.basename(filename);
         composeFile = path.basename(composeFile);
@@ -86,6 +86,7 @@ class DnvComposeFile {
                 workingDir,
                 isNode,
                 packageManager,
+                yarnVersion,
                 managerFiles,
                 user,
             } = serviceInfo;
@@ -154,7 +155,7 @@ class DnvComposeFile {
                             )
                             .replace(
                                 'node',
-                                `node --require="${this.getMetricsPath(
+                                `${(yarnVersion >= 2 || config.yarnVersion >= 2) ? `yarn node` : 'node'} --require="${this.getMetricsPath(
                                     serviceInfo
                                 )}"`
                             );
@@ -187,7 +188,7 @@ class DnvComposeFile {
                                         .replace('yarn ', '')
                                         .replace(
                                             'node',
-                                            config.yarnVersion >= 2
+                                            (yarnVersion >= 2 || config.yarnVersion >= 2)
                                                 ? `yarn node --require="${this.getMetricsPath(
                                                     serviceInfo
                                                 )}"`
@@ -223,7 +224,7 @@ class DnvComposeFile {
                     }
                 }
 
-                const dir = getCacheDir(serviceInfo);
+                const dir = packageManager === 'yarn' && yarnVersion >= 2 ? `./.yarn/cache` : getCacheDir(serviceInfo);
 
 
                 composeOptions.services[serviceName].volumes = [
