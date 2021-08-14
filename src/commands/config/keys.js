@@ -14,6 +14,7 @@ const configKeys = [
     'watchFiles',
     'watchIgnore',
     'workingdir',
+    'installGlobals'
 ];
 
 const pickAnswers = (answers) => {

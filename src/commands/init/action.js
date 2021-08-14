@@ -11,6 +11,7 @@ const { files } = require('../../lib/files');
 
 const cleanProject = require('../clear/all');
 
+
 const getPackageManagerPrompt = require('../config/prompts/packageManager');
 const getDockerImagePrompt = require('../config/prompts/dockerfileNodeImage');
 const getComposeImagePrompt = require('../config/prompts/composeNodeImage');
@@ -663,6 +664,8 @@ const composeFilePrompts = async (opts) => {
 
     cf.updateConfig(opts);
 
+
+
     if (opts.createdDockerFile) {
         console.log('Creating Dockerfile...');
     }
@@ -700,11 +703,12 @@ const initProjectConfig = async (opts) => {
             watchFiles,
             watchIgnore: 'default',
             forceInstall: 'default',
+            installGlobals: {},
             execItems: {},
             recentItems: {},
             execEnvironment: 'default',
-            uiReplDeps: [],
-            uiReplDevDeps: [],
+            uiReplDeps: {},
+            uiReplDevDeps: {},
             allUiServices: serviceNames,
             uiServices: serviceNames,
             uiStats,

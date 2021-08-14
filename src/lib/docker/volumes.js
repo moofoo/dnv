@@ -14,7 +14,7 @@ const volumeExists = async (volumeName, suffix = 'dnv_volume') => {
         filters: { name: [volumeName] },
     });
 
-    return !!Volumes.find((volume) => {
+    const exists = !!Volumes.find(volume => {
         return volume.Name === volumeName;
     });
 };
@@ -24,7 +24,7 @@ const getVolumeName = (suffix = 'dnv_volume') => {
 };
 
 const createPackageVolume = (labels = {}, name, suffix = 'dnv_volume') => {
-    return new Promise(async (resolve) => {
+    return new Promise(async resolve => {
         const exists = await volumeExists(name, suffix);
 
         if (!exists) {
@@ -45,7 +45,33 @@ const createPackageVolume = (labels = {}, name, suffix = 'dnv_volume') => {
     });
 };
 
-const removeVolumeByLabel = async (labels) => {
+const createVolume = async volumeName => {
+    const { Volumes } = await getDocker().listVolumes({
+        filters: { name: [volumeName] },
+    });
+
+    const exists = !!Volumes.find(volume => {
+        return volume.Name === volumeName;
+    });
+
+    if (!exists) {
+        await getDocker().createVolume({
+            Name: volumeName,
+            Labels: {
+                'is-dnv': 'true',
+                'path-key': files.getPathKey(),
+                'dnv-project': files.getUniqueName(),
+
+            },
+        });
+
+        return true;
+    }
+
+    return false;
+};
+
+const removeVolumeByLabel = async labels => {
     const volumes = await getPackageVolumes(labels);
 
     if (volumes && volumes.length) {
@@ -53,30 +79,30 @@ const removeVolumeByLabel = async (labels) => {
             let dockerVolume;
             try {
                 dockerVolume = await getDocker().getVolume(volume);
-            } catch (err) {}
+            } catch (err) { }
 
             if (dockerVolume) {
                 try {
                     dockerVolume.remove();
-                } catch (err) {}
+                } catch (err) { }
             }
         }
     }
 };
 
-const removeProjectVolume = async (projectName) => {
+const removeProjectVolume = async projectName => {
     await removeVolumeByLabel({ 'dnv-project': projectName });
 };
 
-const removeVolume = async (name) => {
+const removeVolume = async name => {
     try {
         const volume = await getDocker().getVolume(name);
         await volume.remove();
-    } catch {}
+    } catch { }
 };
 
-const removeVolumes = async (names) => {
-    await Promise.all(names.map((name) => removeVolume(name)));
+const removeVolumes = async names => {
+    await Promise.all(names.map(name => removeVolume(name)));
 };
 
 const removePackageVolume = async (name, suffix = 'dnv_volume') => {
@@ -101,7 +127,7 @@ const getPackageVolumes = async (labels = {}) => {
         filters: { label: ['is-dnv', ...labels] },
     });
 
-    return Volumes.map((volume) => {
+    return Volumes.map(volume => {
         return volume.Name;
     });
 };
@@ -123,7 +149,7 @@ const removeDnvVolumes = async () => {
     });
 
     await removeVolumes(
-        Volumes.map((volume) => {
+        Volumes.map(volume => {
             return volume.Name;
         })
     );
@@ -141,4 +167,5 @@ module.exports = {
     getPackageVolumes,
     removeProjectVolume,
     removeDnvVolumes,
+    createVolume,
 };

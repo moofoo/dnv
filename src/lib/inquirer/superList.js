@@ -4,6 +4,7 @@ const cliCursor = require('cli-cursor');
 const chalk = require('chalk');
 const { title2 } = require('../text');
 
+const SELECT_SERVICE_SCREEN = 'selectServiceScreen';
 const ADD_MODIFY_SCREEN = 'addModifyScreen';
 const EDIT_DELETE_SCREEN = 'editDeleteScreen';
 const ADD_SCREEN = 'addScreen';
@@ -24,6 +25,8 @@ class SuperList {
         alt = {},
         defaults = [],
         disable = [],
+        selectService = false,
+        services = [],
     }) {
         this.key = key;
         this.title = title;
@@ -37,19 +40,30 @@ class SuperList {
 
         this.editMessage = editMessage;
         this.deleteMessage = deleteMessage;
-        this.defaults = [...defaults] || [];
-        this.startingDefaults = [...this.defaults];
+
+        if (Array.isArray(defaults)) {
+            this.defaults = [...defaults] || [];
+            this.startingDefaults = [...this.defaults];
+
+            this.defaultsMap = this.defaults.reduce((acc, curr) => {
+                return {
+                    [curr.value]: curr,
+                    ...acc,
+                };
+            }, {});
+        } else {
+            this.defaults = defaults;
+        }
+
         this.default = null;
         this.disable = disable || [];
 
         this.alt = alt;
 
-        this.defaultsMap = this.defaults.reduce((acc, curr) => {
-            return {
-                [curr.value]: curr,
-                ...acc,
-            };
-        }, {});
+        this.selectService = selectService;
+        this.services = services;
+
+
 
         this.init = true;
     }
@@ -64,9 +78,40 @@ class SuperList {
         });
     }
 
-    display(answers, setDefs, setAnswers) {
+    display(data, setDefs, setAnswers) {
         const configApp = {
             sections: {
+
+                selectServiceScreen: {
+                    backSection: 'settings',
+                    name: 'selectServiceScreen',
+                    nextSection: (answers) => {
+                        const { service } = answers;
+                        this.objectKey = service;
+
+                        this.defaults = this.defaults[service] ? [...this.defaults[service]] : [];
+
+                        this.startingDefaults = [...this.defaults];
+
+                        this.defaultsMap = this.defaults.reduce((acc, curr) => {
+                            return {
+                                [curr.value]: curr,
+                                ...acc,
+                            };
+                        }, {});
+
+
+                        return ADD_MODIFY_SCREEN;
+                    },
+                    prompt: () => {
+                        return {
+                            type: 'inqselect',
+                            name: 'service',
+                            message: 'Select Service',
+                            choices: this.services
+                        }
+                    }
+                },
                 addModifyScreen: {
                     backSection: 'settings',
                     nextSection: (answers) => {
@@ -75,7 +120,16 @@ class SuperList {
                         if (addOrModify === 'add') {
                             return ADD_SCREEN;
                         } else if (addOrModify === 'save') {
-                            setAnswers({ [this.key]: this.defaults });
+
+                            if (this.objectKey !== '') {
+                                setAnswers({
+                                    [this.key]: {
+                                        [this.objectKey]: this.defaults,
+                                    },
+                                });
+                            } else {
+                                setAnswers({ [this.key]: this.defaults });
+                            }
 
                             return 'settings';
                         } else if (addOrModify === 'cancel') {
@@ -168,15 +222,19 @@ class SuperList {
 
                         if (newItem !== '') {
                             this.default = newItem;
-                            this.defaults.push({
-                                value: newItem,
-                                enabled: true,
-                            });
 
-                            this.defaultsMap[newItem] = {
+                            const addIt = {
                                 value: newItem,
-                                enabled: true,
+                                enabled: true
                             };
+
+                            if (this.selectService) {
+                                addIt.isNew = true;
+                            }
+
+                            this.defaults.push(addIt);
+
+                            this.defaultsMap[newItem] = addIt;
                         }
                         return ADD_MODIFY_SCREEN;
                     },
@@ -184,6 +242,10 @@ class SuperList {
                         if (this.sectionTitle) {
                             title2(this.sectionTitle, true);
                         }
+
+                        process.nextTick(() => {
+                            cliCursor.show();
+                        });
 
                         return {
                             askAnswered: true,
@@ -284,12 +346,12 @@ class SuperList {
                                 {
                                     value:
                                         this.defaultsMap[chosenItem] &&
-                                        this.defaultsMap[chosenItem].enabled
+                                            this.defaultsMap[chosenItem].enabled
                                             ? 'disable'
                                             : 'enable',
                                     name:
                                         this.defaultsMap[chosenItem] &&
-                                        this.defaultsMap[chosenItem].enabled
+                                            this.defaultsMap[chosenItem].enabled
                                             ? `Disable ${chosenItem}`
                                             : `Enable ${chosenItem}`,
                                 },
@@ -315,9 +377,11 @@ class SuperList {
                                 this.defaultsMap[this.chosenItem].value =
                                     editedItem;
 
-                                def.value = editedItem;
+                                this.defaultsMap[this.chosenItem].isNew = true;
 
-                                return def;
+                                def.isNew = true;
+
+                                def.value = editedItem;
                             }
 
                             return def;
@@ -329,6 +393,10 @@ class SuperList {
                         if (this.sectionTitle) {
                             title2(this.sectionTitle, true);
                         }
+
+                        process.nextTick(() => {
+                            cliCursor.show();
+                        });
 
                         return {
                             initialValue: this.chosenItem,
@@ -353,9 +421,14 @@ class SuperList {
             },
         };
 
-        setDefs(configApp, 'addModifyScreen');
+        if (this.selectService) {
+            setDefs(configApp, 'selectServiceScreen');
+            return configApp.sections.selectServiceScreen.prompt(data);
+        } else {
 
-        return configApp.sections.addModifyScreen.prompt(answers);
+            setDefs(configApp, 'addModifyScreen');
+            return configApp.sections.addModifyScreen.prompt(data);
+        }
     }
 }
 

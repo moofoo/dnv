@@ -127,7 +127,7 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
                 }
             );
 
-            return [output.stdout, services.split('\n').map((s) => s.trim())];
+            return [output.stdout, services.split('\n').map(s => s.trim())];
         }
 
         return null;
@@ -323,14 +323,13 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
         this.serviceNames = serviceNames;
 
         this.nodeServiceNames = serviceNames.filter(
-            (sname) => this.services[sname].isNode
+            sname => this.services[sname].isNode
         );
 
         this.nodeContainers = this.nodeServiceNames.map(
-            (sname) => this.services[sname].containerName
+            sname => this.services[sname].containerName
         );
     }
-
     updateConfig(config = {}) {
         config.services = Object.keys(this.services).reduce((acc, curr) => {
             return {

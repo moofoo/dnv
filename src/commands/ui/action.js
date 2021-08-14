@@ -18,6 +18,7 @@ const {
     setupNodeUser,
     initWatchFiles,
     runBuild,
+    installGlobals,
     recordUpdate,
 } = require('../up/action');
 
@@ -217,6 +218,7 @@ const runUpDetached = (opts) => {
             buildCmd,
             newBuild,
             quit,
+            noRecreate,
         } = opts;
         if (quit) {
             return opts;
@@ -243,6 +245,7 @@ const runUpDetached = (opts) => {
                         externalVolume,
                         buildCmd,
                         newBuild,
+                        noRecreate,
                     });
                 } catch (err) {
                     reject(err);
@@ -390,6 +393,7 @@ const upAction = async (opts = {}) => {
         populateVolumeAndInstallDependences,
         setupNodeUser,
         runBuild,
+        installGlobals,
         initWatchFiles,
         runUpDetached,
     ]);

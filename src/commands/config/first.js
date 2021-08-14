@@ -47,6 +47,7 @@ const initDefaults = async (firstInit = false, project = false) => {
                 {
                     value: 'node-gyp',
                     enabled: true,
+
                 },
             ],
             execEnvironment: [

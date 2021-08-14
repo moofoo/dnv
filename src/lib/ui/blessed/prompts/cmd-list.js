@@ -315,6 +315,11 @@ class CmdList extends blessed.List {
             return self.findIndex((itm) => itm.name === value.name) === index;
         });
 
+
+        items = items.filter(item => {
+            return !(!item.name || !item.cmd);
+        });
+
         if (this.options.disabled && this.options.disabled.length) {
             items = items.filter(
                 (item) =>

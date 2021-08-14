@@ -5,6 +5,7 @@ const cloneDeep = require('lodash.clonedeep');
 const stripAnsi = require('strip-ansi');
 const execa = require('execa');
 const fs = require('fs');
+const { basename } = require('path');
 
 const {
     populateAndInstall,
@@ -21,6 +22,7 @@ const { files } = require('../../lib/files');
 const watch = require('../../lib/watcher');
 const ComposeFile = require('../../lib/file-gen/compose-file');
 const DnvComposeFile = require('../../lib/file-gen/dnv-compose-file');
+const { copyLocalTar } = require('../../lib/find-deps');
 
 function IsJsonString(str) {
     try {
@@ -31,7 +33,7 @@ function IsJsonString(str) {
     return true;
 }
 
-const checkAndValidateFiles = (opts) => {
+const checkAndValidateFiles = opts => {
     if (!opts.dnvui) {
         opts.progressMsg('Validating Docker Files');
     }
@@ -84,7 +86,7 @@ const checkAndValidateFiles = (opts) => {
     return opts;
 };
 
-const optionProcessing = async (opts) => {
+const optionProcessing = async opts => {
     let {
         allUiServices,
         uiServices,
@@ -163,6 +165,8 @@ const optionProcessing = async (opts) => {
         diff.serviceChange ||
         (!dnvExists && externalVolume);
 
+    opts.noRecreate = populateFailed === null && !dnvExists;
+
     const cf = regen
         ? ComposeFile.getInstance(
             composeFile,
@@ -182,16 +186,16 @@ const optionProcessing = async (opts) => {
     cf.nodeContainers =
         cf.nodeContainers ||
         Object.values(cf.services)
-            .filter((service) => service.isNode)
-            .map((service) => service.containerName);
+            .filter(service => service.isNode)
+            .map(service => service.containerName);
 
     opts.nodeContainers = cf.nodeContainers;
 
     cf.nodeServiceNames =
         cf.nodeServiceNames ||
         Object.values(cf.services)
-            .filter((service) => service.isNode)
-            .map((service) => service.serviceName);
+            .filter(service => service.isNode)
+            .map(service => service.serviceName);
 
     const projectConfig = config.getProjectConfig(true);
 
@@ -231,7 +235,7 @@ const optionProcessing = async (opts) => {
     }
 
     if (regen) {
-        opts = cf.updateConfig(opts);
+        opts = cf.updateConfig(opts, false);
     }
 
     projectConfig.services = cloneDeep(opts.services);
@@ -269,7 +273,7 @@ const optionProcessing = async (opts) => {
             config.get('defaultConfig.uiStats')
         ) {
             uiStats = uiStats || [];
-            dnvServices.forEach((service) => {
+            dnvServices.forEach(service => {
                 if (!allUiServices.includes(service)) {
                     if (opts[service].isNode && !uiStats.includes(service)) {
                         uiStats.push(service);
@@ -319,7 +323,7 @@ const optionProcessing = async (opts) => {
     return opts;
 };
 
-const setupServiceSince = async (opts) => {
+const setupServiceSince = async opts => {
     let { uiSince, services } = opts;
 
     const statuses = {};
@@ -363,7 +367,7 @@ const setupServiceSince = async (opts) => {
     return opts;
 };
 
-const checkBuild = async (opts) => {
+const checkBuild = async opts => {
     const { externalVolume, services, install } = opts;
 
     if (externalVolume) {
@@ -401,7 +405,7 @@ const checkBuild = async (opts) => {
             diffServices.push(name);
         } else if (
             Object.values(service.managerFiles).find(
-                (file) =>
+                file =>
                     file.newModified !== undefined && file.newModified !== null
             )
         ) {
@@ -418,7 +422,7 @@ const checkBuild = async (opts) => {
     return opts;
 };
 
-const runBuild = async (opts) => {
+const runBuild = async opts => {
     let {
         progressMsg,
         removeOrphans,
@@ -483,8 +487,8 @@ const recordUpdate = () => {
     config.set(`projectConfigs.${projectConfig.pathKey}`, projectConfig);
 };
 
-const populateVolumeAndInstallDependences = async (opts) => {
-    return new Promise((resolve) => {
+const populateVolumeAndInstallDependences = async opts => {
+    return new Promise(resolve => {
         let {
             pathKey,
             name: projectName,
@@ -558,8 +562,167 @@ const populateVolumeAndInstallDependences = async (opts) => {
     });
 };
 
-const setupNodeUser = (opts) => {
-    return new Promise(async (resolve) => {
+const installGlobals = async opts => {
+
+    let {
+        progressMsg,
+        buildCmd,
+        newBuild,
+        externalVolume,
+        pathKey,
+        installGlobals,
+        services,
+        dnvComposeFile,
+        composeFile,
+        name: projectName,
+        allUp,
+        optsInstall
+    } = opts;
+
+    const root = composeFile.replace('/' + basename(composeFile), '');
+
+    const composePath = externalVolume ? files.getFullFile(dnvComposeFile, root) : files.getFullFile(composeFile, root);
+
+    if (!Object.keys(installGlobals).length) {
+        return opts;
+    }
+
+    const projectConfig = config.getProjectConfig(true);
+
+    const composePrefix = `docker-compose -p ${projectName} -f ${externalVolume ? basename(dnvComposeFile) : basename(composeFile)}`;
+
+    const containerState = {};
+    const nodeServices = [];
+
+    let packageManager;
+    let yarnVersion;
+
+    for (const [name, service] of Object.entries(services)) {
+        if (service.isNode) {
+            packageManager = service.packageManager;
+            yarnVersion = service.yarnVersion;
+
+            nodeServices.push(name);
+
+            containerState[name] = getContainerStateSync(service.containerName);
+        }
+    }
+
+    let allRunning = true;
+
+    for (const [name, service] of Object.entries(services)) {
+
+        let globals = [];
+        let areNew = [];
+
+        if (installGlobals && installGlobals[name]) {
+            globals = [...installGlobals[name]]
+                .filter(glob => glob.enabled)
+                .map(glob => glob.value);
+
+            areNew = [...installGlobals[name]]
+                .filter(glob => glob.enabled && glob.isNew)
+                .map(glob => glob.value);
+        }
+
+        if (globals.length) {
+            const { newVolume, containerName, shortPath } = service;
+
+            console.log('newVolume, buildCmd, newBuild', newVolume, buildCmd, newBuild, areNew);
+
+            if (!((externalVolume && newVolume) || buildCmd || newBuild)) {
+                if (areNew.length) {
+                    globals = areNew;
+                } else {
+                    continue;
+                }
+            }
+
+            globals.filter(val => val);
+
+            if (!globals.length) {
+                continue;
+            }
+
+            const state = getContainerStateSync(containerName);
+
+            if (!state.running) {
+                allRunning = false;
+            }
+
+            if (!state.exists) {
+                await execa.command(`${composePrefix} up --no-build --no-start`, {
+                    stdio: 'pipe',
+                    cwd: root
+                });
+            }
+
+            await execa.command(`${composePrefix} up --force-recreate --detach ${nodeServices.join(' ')}`);
+
+
+            const files = [];
+
+            for (const glob of globals) {
+                const filename = copyLocalTar(service, glob, root);
+                files.push(filename);
+            }
+
+
+            progressMsg(color(`${shortPath} ${name} - npm install -g ${globals.join(' ')}`));
+
+            const cmd = packageManager === 'npm' ? `npm install ${files.join(' ')} -g --cache=/usr/packagecache --update-notifier=false --progress=false --fund=false --audit=false --color=false --strict-ssl=false --prefer-offline=true` : '';
+
+            if (optsInstall) {
+                cmd += ' --force';
+            }
+
+            const exec = `docker exec --tty -u=root -w ${service.workingDir} ${containerName} sh -c "${cmd}"`;
+
+            await execa.command(exec, {
+                stdio: 'inherit',
+                shell: true,
+                cwd: root,
+            });
+
+            projectConfig.installGlobals[name] = projectConfig.installGlobals[
+                name
+            ].map(glob => {
+                if (globals.includes(glob.value)) {
+                    return { ...glob, isNew: false };
+                }
+
+                return glob;
+            });
+        }
+
+        projectConfig.services[name].newVolume = false;
+    }
+
+    config.set(`projectConfigs.${pathKey}`, projectConfig);
+
+    if (files.length) {
+        await execa.command(`docker exec --tty -u=root -w ${service.workingDir} ${containerName} sh -c "rm ${files.join(' && rm ')}"`, {
+            shell: true,
+            cwd: root,
+            stdio: 'pipe',
+        });
+    }
+
+    if (!allUp) {
+
+        await execa.command(`${composePrefix} stop ${nodeServices.join(' ')}`, {
+            stdio: 'pipe',
+            cwd: root,
+        });
+    }
+
+    return opts;
+
+
+};
+
+const setupNodeUser = opts => {
+    return new Promise(async resolve => {
         const {
             services,
             hasUser,
@@ -624,29 +787,33 @@ const setupNodeUser = (opts) => {
                     }
                 );
 
-                if (notRunning) {
-                    resolve(opts);
-                }
+
+
 
                 opts.usersSetup = true;
 
                 config.setProjectConfigProp(pathKey, 'usersSetup', true);
+
+                if (notRunning) {
+                    resolve(opts);
+                    return;
+                }
             }, 1500);
         }
+
 
         resolve(opts);
     });
 };
 
-const initWatchFiles = (opts) => {
+const initWatchFiles = opts => {
     let { services, progressMsg, watchFiles, watchIgnore } = opts;
-
 
     watchIgnore = !watchIgnore
         ? []
         : Object.values(watchIgnore)
-            .map((wi) => wi.enabled && wi.value)
-            .filter((val) => val);
+            .map(wi => wi.enabled && wi.value)
+            .filter(val => val);
 
     if (
         (watchFiles && !Array.isArray(watchFiles)) ||
@@ -665,8 +832,8 @@ const initWatchFiles = (opts) => {
                     watch(serviceInfo, [
                         ...watchIgnore,
                         ...Object.values(serviceInfo.managerFiles)
-                            .map((file) => file.host)
-                            .filter((val) => val),
+                            .map(file => file.host)
+                            .filter(val => val),
                     ])
                 ) {
                     serviceInfo.watching = true;
@@ -683,7 +850,7 @@ const initWatchFiles = (opts) => {
     return opts;
 };
 
-const runUpAndAttach = async (opts) => {
+const runUpAndAttach = async opts => {
     let {
         name: projectName,
         progressMsg,
@@ -694,6 +861,7 @@ const runUpAndAttach = async (opts) => {
         detach,
         nodeContainers,
         quit,
+        noRecreate
     } = opts;
 
     recordUpdate();
@@ -711,6 +879,7 @@ const runUpAndAttach = async (opts) => {
                 nodeContainers,
                 services,
                 externalVolume,
+                noRecreate
             });
         } catch (err) {
             reject(err);
@@ -725,11 +894,12 @@ const runUpAndAttach = async (opts) => {
             uiServices,
             externalVolume,
             detach,
+            noRecreate
         });
     }
 };
 
-const upAction = async (opts) => {
+const upAction = async opts => {
     if (!config.isProjectConfigSet()) {
         error('Project not initialized');
         process.exit(0);
@@ -749,6 +919,7 @@ const upAction = async (opts) => {
         populateVolumeAndInstallDependences,
         setupNodeUser,
         runBuild,
+        installGlobals,
         initWatchFiles,
         runUpAndAttach,
     ];
@@ -766,5 +937,6 @@ module.exports = {
     setupNodeUser,
     initWatchFiles,
     runBuild,
+    installGlobals,
     recordUpdate,
 };

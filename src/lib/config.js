@@ -58,6 +58,8 @@ class Config extends Conf {
         this.dockerRunning = dockerRunning;
         this.hasNodeImage = this.dockerRunning ? !!(await getNodeImage()) : false;
 
+        this.delete('projectConfigs.undefined');
+
     }
 
     get(key, defaultVal) {
@@ -161,12 +163,27 @@ class Config extends Conf {
         return projectConfig;
     }
 
+    setServiceProp(projKey, serviceName, key, value) {
+        projKey = projKey || files.getPathKey();
+
+        const projectConfig = this.get(`projectConfigs.${projKey}`);
+
+        if (projectConfig && projectConfig.services[serviceName]) {
+            this.set(`projectConfigs.${projKey}.services.${serviceName}.${key}`, value);
+
+        } else {
+            throw new Error(
+                `setServiceProp called on nonexistent config or service  ${serviceName} ${key} ${value}`
+            );
+        }
+    }
+
     setProjectConfigProp(projKey, key, value) {
         projKey = projKey || files.getPathKey();
 
-        let config = this.get(`projectConfigs.${projKey}`);
+        let projectConfig = this.get(`projectConfigs.${projKey}`);
 
-        if (!!config && typeof projKey === 'object') {
+        if (!!projectConfig && typeof projKey === 'object') {
             const configs = this.getAllProjectConfigs();
 
             const key = Object.keys(projKey)[0];
@@ -180,7 +197,7 @@ class Config extends Conf {
             }
         }
 
-        if (!config) {
+        if (!projectConfig) {
             throw new Error(
                 'setProjectConfigProp called on nonexistent config ' +
                 key +
@@ -188,18 +205,18 @@ class Config extends Conf {
             );
         }
 
-        const pathKey = config.pathKey;
+        const pathKey = projectConfig.pathKey;
         const configKey = `projectConfigs.${pathKey}`;
 
         if (Array.isArray(key) && Array.isArray(value)) {
             for (let x = 0; x < key.length; x++) {
-                config[key[x]] = value[x];
+                projectConfig[key[x]] = value[x];
             }
         } else {
-            config[key] = value;
+            projectConfig[key] = value;
         }
 
-        this.set(configKey, config);
+        this.set(configKey, projectConfig);
     }
 
     log(msg) {

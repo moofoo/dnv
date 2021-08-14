@@ -8,6 +8,8 @@ const { config } = require('../config');
 
 const { prepPath } = require('./util');
 
+const { getCacheDir } = require('../../lib/find-deps');
+
 class DnvComposeFile {
     static exists(filename = 'docker-compose-dnv-gen.yml', cwd = files.cwd) {
         filename = path.basename(filename);
@@ -221,6 +223,9 @@ class DnvComposeFile {
                     }
                 }
 
+                const dir = getCacheDir(serviceInfo);
+
+
                 composeOptions.services[serviceName].volumes = [
                     ...volumes.filter(
                         (vol) =>
@@ -239,6 +244,7 @@ class DnvComposeFile {
                             `${workingDir}/node_modules`,
                         volume: { nocopy: true },
                     },
+                    `${dir}:/usr/packagecache`,
                 ];
 
                 nodeCount++;

@@ -61,15 +61,13 @@ const configAction = async (opts = {}) => {
                 nextSection: 'settings',
 
                 prompt: function () {
-                    const theTitle = `${
-                        projectOpts ? selectedProject.dir : 'Default'
-                    } Configuration`;
+                    const theTitle = `${projectOpts ? selectedProject.dir : 'Default'
+                        } Configuration`;
 
                     if (currentTitle !== theTitle) {
                         currentTitle = theTitle;
                         title2(
-                            `${
-                                projectOpts ? selectedProject.dir : 'Default'
+                            `${projectOpts ? selectedProject.dir : 'Default'
                             } Configuration`,
                             true
                         );
@@ -80,9 +78,8 @@ const configAction = async (opts = {}) => {
                         showHelp: false,
                         type: 'inqselect',
                         name: 'category',
-                        title: `${
-                            projectOpts ? selectedProject.dir : 'Default'
-                        } Configuration`,
+                        title: `${projectOpts ? selectedProject.dir : 'Default'
+                            } Configuration`,
                         choices: [
                             {
                                 value: 'docker',
@@ -132,8 +129,8 @@ const configAction = async (opts = {}) => {
                             answers[value] !== undefined
                                 ? answers[value]
                                 : projectOpts
-                                ? selectedProject[value]
-                                : defaultConfig[value];
+                                    ? selectedProject[value]
+                                    : defaultConfig[value];
 
                         const isDefault =
                             projectOpts && configValue === 'default';
@@ -162,12 +159,11 @@ const configAction = async (opts = {}) => {
                             for (const [key, val] of Object.entries(
                                 configValue
                             )) {
-                                if (val) {
-                                    tmp += `${key}: ${
-                                        Array.isArray(val)
-                                            ? val.join(', ')
-                                            : val
-                                    }`;
+                                if (Array.isArray(val)) {
+                                    tmp += `${key}: ${Array.isArray(val)
+                                        ? typeof val[0] === 'object' ? val.map(v => v.value).join(', ') : val.join(', ')
+                                        : val
+                                        }`;
                                 }
                             }
 
@@ -273,8 +269,8 @@ const configAction = async (opts = {}) => {
                             answers[name] !== undefined
                                 ? answers[name]
                                 : projectOpts
-                                ? selectedProject[name]
-                                : defaultConfig[name];
+                                    ? selectedProject[name]
+                                    : defaultConfig[name];
 
                         return {
                             message,

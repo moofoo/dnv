@@ -16,6 +16,7 @@ const logProject = (showDefault = false) => {
                 'watchFiles',
                 'watchIgnore',
                 'forceInstall',
+                'installGlobals',
                 'removeOrphans',
                 'execEnvironment',
                 'uiStats',
@@ -26,6 +27,7 @@ const logProject = (showDefault = false) => {
                 'uiReplDevDeps',
                 'services',
                 'populateFailed',
+
             ]),
             false,
             10,

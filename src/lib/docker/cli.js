@@ -6,6 +6,7 @@ const {
     createPackageVolume,
     removePackageVolume,
     removeVolume,
+    createVolume,
 } = require('./volumes');
 const { removeContainer, getContainerStateSync } = require('./containers');
 const { files } = require('../files');
@@ -53,10 +54,12 @@ const dockerRun = ({
         if (!state.exists) {
             const cmd = `docker run -u=root ${flags} --name ${container} ${mountFlag} -w ${workingDir} -v ${volume}:${workingDir} ${image}`;
 
+
             try {
                 await execa.command(cmd, { stdio: 'pipe' });
             } catch {
                 resolve(false);
+
             }
 
             resolve(true);
@@ -171,6 +174,7 @@ const populateAndInstall = ({
             .filter((fi) => fi.enabled === true)
             .map((fi) => fi.value);
 
+
         const forceInstallMap = configForceInstall.reduce((acc, curr) => {
             return {
                 ...acc,
@@ -213,16 +217,21 @@ const populateAndInstall = ({
 
         if (projectConfig.populateFailed || retry || optsInstall) {
             try {
-                await removePackageVolume(volumeName, '');
+                await removeVolume(volumeName);
             } catch { }
         }
 
         try {
-            newlyCreated = await createPackageVolume({}, volumeName, '');
+            newlyCreated = await createVolume(volumeName);
 
             if (newlyCreated) {
                 config.setProjectConfigProp(pathKey, 'execItems', {});
                 config.setProjectConfigProp(pathKey, 'recentItems', {});
+
+            }
+
+            if (projectConfig.populateFailed || retry || optsInstall || newlyCreated) {
+                config.setServiceProp(pathKey, serviceName, 'newVolume', true);
             }
 
             /*
@@ -260,7 +269,10 @@ const populateAndInstall = ({
                     printProgress(`Lock file unchanged`);
                 }
             }
+
             const doingInstall = newlyCreated || diff || forceInstall;
+
+
 
             if (doingInstall) {
                 /*
@@ -741,6 +753,7 @@ const dnvUpDetached = async function ({
     projectName = null,
     externalVolume = false,
     progress = console.log,
+    noRecreate = false
 }) {
     if (externalVolume) {
         file.unshift('docker-compose-dnv-gen.yml');
@@ -758,6 +771,9 @@ const dnvUpDetached = async function ({
 
     command += ` up --detach ${removeOrphans ? '--remove-orphans' : ''}`;
 
+    if (noRecreate) {
+        command += ' --no-recreate';
+    }
     try {
         const subprocess = execa.command(command, {
             cwd,
@@ -844,6 +860,7 @@ const dnvUp = async ({
     file = [],
     projectName = '',
     externalVolume = false,
+    noRecreate = false
 }) => {
     if (externalVolume) {
         file.unshift('docker-compose-dnv-gen.yml');
@@ -860,6 +877,10 @@ const dnvUp = async ({
     }
 
     command += ` up ${removeOrphans ? '--remove-orphans' : ''}`;
+
+    if (noRecreate) {
+        command += ' --no-recreate';
+    }
 
     let subprocess;
 

@@ -1,10 +1,88 @@
 // adapted from https://github.com/laggingreflex/findep
 const fs = require('fs');
 const { setCwd, fromCwd, readJsonFromFile } = require('./utils');
-
 const execa = require('execa');
 
-const findYarn2Deps = (depsToFind) => {
+let localInstalled = null;
+
+const copyLocalTar = (service, toInstall, cwd) => {
+
+    if (!service || !toInstall || toInstall === 'undefined') {
+        return;
+    }
+
+
+
+    if (localInstalled === null) {
+        const { stdout } = execa.commandSync(`npm list --global --json`, {
+            stdio: 'pipe',
+        });
+
+        let globalList;
+
+        try {
+
+            globalList = stdout.trim();
+            globalList = JSON.parse(globalList);
+
+            localInstalled = Object.keys(globalList.dependencies);
+
+
+        } catch { }
+
+        setTimeout(() => {
+            localInstalled = null;
+        }, 3500)
+    }
+
+    if ((localInstalled || []).includes(toInstall)) {
+        const { stdout, stderr } = execa.commandSync(`npm pack ${toInstall} --pack-destination ${cwd}`, {
+            shell: true,
+            stdio: 'pipe',
+            cwd,
+        });
+        let filename = stdout.trim().replace('/', '-')
+
+        execa.commandSync(`docker cp ${cwd}/${filename} ${service.containerName}:${service.workingDir}`);
+
+        return filename;
+    }
+
+    return false;
+
+
+
+};
+
+const getCacheDir = service => {
+    const { packageManager, yarnVersion } = service;
+    let cacheDir = null;
+
+    if (yarnVersion < 2) {
+        const configCommand =
+            packageManager === 'yarn'
+                ? 'yarn cache dir'
+                : 'npm config get cache';
+
+        const { stdout } = execa.commandSync(configCommand, {
+            stdio: 'pipe',
+        });
+
+        cacheDir = stdout;
+    }
+
+    return cacheDir;
+};
+
+const getPrefix = service => {
+    const { stdout } = execa.commandSync('npm config get prefix', {
+        stdio: 'pipe',
+    });
+
+    return stdout;
+};
+
+const findYarn2Deps = depsToFind => {
     forceInstalls = [];
     for (const dep of depsToFind) {
         let json;
@@ -15,7 +93,7 @@ const findYarn2Deps = (depsToFind) => {
             if (output.stdout) {
                 json = JSON.parse(output.stdout);
             }
-        } catch {}
+        } catch { }
 
         if (typeof json === 'object') {
             forceInstalls.push(dep);
@@ -26,8 +104,8 @@ const findYarn2Deps = (depsToFind) => {
 };
 
 const findDeps = (depsToFind, cwd) => {
-    return new Promise((mainResolve) => {
-        const getDeps = (pkg) =>
+    return new Promise(mainResolve => {
+        const getDeps = pkg =>
             Object.assign(
                 {},
                 pkg.dependencies,
@@ -54,10 +132,10 @@ const findDeps = (depsToFind, cwd) => {
         const peerDeps = Object.keys(pkg.peerDependencies || {});
 
         for (const dep of deps) {
-            if (depsToFind.includes(dep) && !foundDeps.includes(dep)) {
+            if (depsToFind.includes(dep) && !foundDeps.includes(dp)) {
                 depsChecked.push(dep);
                 foundDeps.push(dep);
-                depsToFind = depsToFind.filter((val) => val !== dep);
+                depsToFind = depsToFind.filter(val => val !== dep);
             }
         }
 
@@ -65,7 +143,7 @@ const findDeps = (depsToFind, cwd) => {
             if (depsToFind.includes(dep) && !foundDeps.includes(dep)) {
                 depsChecked.push(dep);
                 foundDeps.push(dep);
-                depsToFind = depsToFind.filter((val) => val !== dep);
+                depsToFind = depsToFind.filter(val => val !== dep);
             }
         }
 
@@ -73,7 +151,7 @@ const findDeps = (depsToFind, cwd) => {
             if (depsToFind.includes(dep) && !foundDeps.includes(dep)) {
                 depsChecked.push(dep);
                 foundDeps.push(dep);
-                depsToFind = depsToFind.filter((val) => val !== dep);
+                depsToFind = depsToFind.filter(val => val !== dep);
             }
         }
 
@@ -96,9 +174,9 @@ const findDeps = (depsToFind, cwd) => {
                                 )
                             );
 
-                            getJson = getJson.catch((err) => ({}));
+                            getJson = getJson.catch(err => ({}));
 
-                            getJson.then((pkg) => {
+                            getJson.then(pkg => {
                                 // log(pkg);
                                 if (!pkg) {
                                     return resolve();
@@ -106,16 +184,16 @@ const findDeps = (depsToFind, cwd) => {
                                 const deps = getDeps(pkg);
                                 Promise.all(
                                     depsToFind.map(
-                                        (depToFind) =>
+                                        depToFind =>
                                             new Promise((resolve, reject) => {
                                                 if (depToFind in deps) {
                                                     const include =
                                                         (pDeps
                                                             ? pDeps.join(
-                                                                  ' > '
-                                                              ) +
-                                                              ' > ' +
-                                                              dep
+                                                                ' > '
+                                                            ) +
+                                                            ' > ' +
+                                                            dep
                                                             : dep) +
                                                         ' > ' +
                                                         depToFind;
@@ -147,7 +225,7 @@ const findDeps = (depsToFind, cwd) => {
         mainPromise.catch(console.error).then(() => {
             if (foundDeps.length) {
                 mainResolve(
-                    foundDeps.map((dep) => {
+                    foundDeps.map(dep => {
                         return dep.split(' > ')[0];
                     })
                 );
@@ -161,4 +239,6 @@ const findDeps = (depsToFind, cwd) => {
 module.exports = {
     findDeps,
     findYarn2Deps,
+    getCacheDir,
+    copyLocalTar,
 };
