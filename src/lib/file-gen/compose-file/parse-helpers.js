@@ -298,7 +298,7 @@ class ComposeParseHelpers {
             for (const name of Object.keys(services)) {
                 if (services[name].isNode) {
                     services[name].volumeName =
-                        this.projectName + '_dnv_volume';
+                        this.projectName + '_' + name + '_dnv_volume';
                 }
             }
         }

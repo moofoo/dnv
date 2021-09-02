@@ -604,10 +604,10 @@ class DockerFile {
         dir = multiRepo ? workingDir + '/' + dir : workingDir;
 
         if (packageManager === 'npm') {
-            contents += `RUN --mount=type=cache,target=${dir}/node_modules --mount=type=cache,id=npm,target=~/.npm \\\n`;
+            contents += `RUN --mount=type=cache,id=npm,target=~/.npm \\\n`;
         } else if (packageManager === 'yarn') {
             if (yarnVersion < 2) {
-                contents += `RUN --mount=type=cache,target=${dir}/node_modules --mount=type=cache,id=npm,target=~/.cache/yarn/v6 \\\n`;
+                contents += `RUN --mount=type=cache,id=npm,target=~/.cache/yarn/v6 \\\n`;
             } else {
                 contents += `RUN --mount=type=cache,target=${dir}/.yarn/cache \\\n`;
             }

@@ -245,7 +245,6 @@ class DnvComposeFile {
                             `${workingDir}/node_modules`,
                         volume: { nocopy: true },
                     },
-                    `${dir}:/usr/packagecache`,
                 ];
 
                 nodeCount++;

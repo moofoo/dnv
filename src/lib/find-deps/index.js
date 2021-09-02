@@ -132,7 +132,7 @@ const findDeps = (depsToFind, cwd) => {
         const peerDeps = Object.keys(pkg.peerDependencies || {});
 
         for (const dep of deps) {
-            if (depsToFind.includes(dep) && !foundDeps.includes(dp)) {
+            if (depsToFind.includes(dep) && !foundDeps.includes(dep)) {
                 depsChecked.push(dep);
                 foundDeps.push(dep);
                 depsToFind = depsToFind.filter(val => val !== dep);

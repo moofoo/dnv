@@ -192,7 +192,7 @@ const populateAndInstall = ({
 
         const pkgDeps = Object.keys(pkgJson.dependencies);
 
-        let container = `${projectName}_dnv_container`;
+        let container = `${projectName}_${serviceName}_dnv_container`;
 
         const printProgress = (txt) => {
             progressMsg(
