@@ -368,7 +368,7 @@ const setupServiceSince = async opts => {
 };
 
 const checkBuild = async opts => {
-    const { externalVolume, services, install } = opts;
+    const { externalVolume, services, install, name: projectName } = opts;
 
     if (externalVolume) {
         opts.buildCmd = null;
@@ -376,17 +376,25 @@ const checkBuild = async opts => {
     }
 
     let output;
+    let allImagesOk = true;
 
-    output = await execa.command('docker-compose images -q', {
-        cwd: files.cwd,
-        stdio: 'pipe',
-    });
+    for (const [name] of Object.entries(services)) {
+        output = await execa.command(`docker image inspect ${projectName}_${name}`, {
+            cwd: files.cwd,
+            stdio: 'pipe',
+        });
 
-    const stdout =
-        ((output.stdout && stripAnsi(output.stdout).trim()) || '') +
-        ((output.stderr && stripAnsi(output.stderr).trim()) || '');
+        const stdout =
+            ((output.stdout && stripAnsi(output.stdout).trim()) || '') + ' ' +
+            ((output.stderr && stripAnsi(output.stderr).trim()) || '');
 
-    if (stdout === '') {
+        if (stdout.includes('Error: No such image')) {
+            allImagesOk = false;
+            break;
+        }
+    }
+
+    if (!allImagesOk) {
         opts.buildCmd = `docker-compose build --parallel `;
         opts.newBuild = true;
         return opts;
@@ -403,17 +411,17 @@ const checkBuild = async opts => {
             (install || service.diff || service.newContainer)
         ) {
             diffServices.push(name);
-        } else if (
-            Object.values(service.managerFiles).find(
-                file =>
-                    file.newModified !== undefined && file.newModified !== null
-            )
-        ) {
-            diffServices.push(name);
+        } else if (service.managerFiles && service.managerFiles.lockFile) {
+            if (service.managerFiles.lockFile.newModified !== undefined && service.managerFiles.lockFile.newModified !== null) {
+                diffServices.push(name);
+            }
         }
     }
 
+
     if (diffServices.length) {
+        console.log("DIFF SERVICES", diffServices);
+
         opts.buildCmd += `${diffServices.join(' ')}`;
     } else {
         opts.buildCmd = null;
@@ -826,10 +834,10 @@ const initWatchFiles = opts => {
                     (Array.isArray(watchFiles) &&
                         watchFiles.includes(serviceName)))
             ) {
-                if (
+                if (serviceInfo && serviceInfo.managerFiles &&
                     watch(serviceInfo, [
                         ...watchIgnore,
-                        ...Object.values(serviceInfo.managerFiles)
+                        ...Object.values((serviceInfo.managerFiles || {}))
                             .map(file => file.host)
                             .filter(val => val),
                     ])

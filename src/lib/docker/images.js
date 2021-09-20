@@ -22,7 +22,7 @@ const getNodeImages = async () => {
     const other = [];
 
     for (const img of images) {
-        if (img === 'node' || /^node:/.test(img)) {
+        if (img === 'node' || /^node/.test(img)) {
             if (/^node:(\d+|\d+\.)+$/.test(img)) {
                 numbered.push(img);
             } else if (img === 'node:latest' || img === 'node:current') {
@@ -54,7 +54,7 @@ const removeImage = async (name) => {
         if (image && image.remove) {
             await image.remove();
         }
-    } catch {}
+    } catch { }
 };
 
 const removeImages = async (names) => {

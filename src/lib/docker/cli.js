@@ -77,7 +77,22 @@ const copyAsync = (file, container, path = '/usr/src/app') => {
 };
 
 const copyAll = async (files, container, path = '/usr/src/app ') => {
-    await Promise.all(files.map((file) => copyAsync(file, container, path)));
+    for (const file of files) {
+        if (file.path && !file.path.includes('node_modules')) {
+            await shellExec({
+                container,
+                cmd: `mkdir -p ${file.path}`
+            });
+        }
+    }
+    await Promise.all(files.map((file) => {
+        if (file.file && file.path) {
+            copyAsync(file.file, container, file.path)
+        } else {
+            copyAsync(file, container, path)
+        }
+
+    }));
 };
 
 /*
@@ -190,7 +205,7 @@ const populateAndInstall = ({
             return 0;
         });
 
-        const pkgDeps = Object.keys(pkgJson.dependencies);
+        const pkgDeps = Object.keys(pkgJson.dependencies || {});
 
         let container = `${projectName}_${serviceName}_dnv_container`;
 
@@ -368,11 +383,14 @@ const populateAndInstall = ({
                             mountFlag = '';
                         }
 
-                        config.setProjectConfigProp(
-                            pathKey,
-                            'forceInstall',
-                            configForceInstall
-                        );
+                        /*const existingForce = projectConfig.forceInstall || [];
+                        if(existingForce.length !== configForceInstall.length){
+                            config.setProjectConfigProp(
+                                pathKey,
+                                'forceInstall',
+                                configForceInstall
+                            );
+                        }*/
                     }
                 }
 

@@ -131,11 +131,20 @@ class ComposeParseHelpers {
 
         let pkgPaths = [];
 
-        for (const path of servicePaths) {
+        for (let path of servicePaths) {
+            path = path.replace('/./', '/').replace('/./', '/').replace('/./', '/');
+
+            if (!df.localLookup[path]) {
+                continue;
+            }
             const host = df.localLookup[path];
 
             const lockFile = this.getLockFile(service.packageManager, service.yarnVersion);
             const dotFile = this.getDotFile(service.packageManager, service.yarnVersion);
+
+            if (path.includes(`${lockFile}/${lockFile}`) || path.includes(`${dotFile}/${dotFile}`)) {
+                continue;
+            }
 
             service.lockFile = lockFile;
             service.dotFile = dotFile;

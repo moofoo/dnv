@@ -198,43 +198,51 @@ class DockerFile {
                                 };
                             }
 
-                            for (const wd of wdMap.get(range).reverse()) {
-                                if (cpyRange.start.line > wd.range.start.line) {
-                                    const wdPath = wd.getAbsolutePath();
-                                    if (to.value === '.' || to.value === './') {
-                                        to = wdPath;
+                            const wdMapRange = wdMap.get(range);
+
+                            if (wdMapRange) {
+
+                                for (const wd of wdMapRange.reverse()) {
+                                    if (cpyRange.start.line > wd.range.start.line) {
+                                        const wdPath = wd.getAbsolutePath();
+                                        if (to.value === '.' || to.value === './') {
+                                            to = wdPath;
+                                            break;
+                                        } else if (to.value.substr(0, 1) === '/') {
+                                            to = to.value;
+                                            break;
+                                        }
+
+                                        const wdSplit = wdPath.split('/');
+
+                                        let toValue = to.value;
+
+                                        for (const split of wdSplit) {
+                                            toValue = toValue
+                                                .replace(split, '')
+                                                .replace('//', '/');
+                                        }
+
+                                        if (toValue.substr(0, 1) === '/') {
+                                            toValue = wdPath + toValue;
+                                        } else {
+                                            toValue = wdPath + '/' + toValue;
+                                        }
+
+                                        to = toValue;
                                         break;
-                                    } else if (to.value.substr(0, 1) === '/') {
-                                        to = to.value;
-                                        break;
                                     }
-
-                                    const wdSplit = wdPath.split('/');
-
-                                    let toValue = to.value;
-
-                                    for (const split of wdSplit) {
-                                        toValue = toValue
-                                            .replace(split, '')
-                                            .replace('//', '/');
-                                    }
-
-                                    if (toValue.substr(0, 1) === '/') {
-                                        toValue = wdPath + toValue;
-                                    } else {
-                                        toValue = wdPath + '/' + toValue;
-                                    }
-
-                                    to = toValue;
-                                    break;
                                 }
                             }
 
-                            if (
-                                to.substr(-1) === '/' ||
-                                to.substr(-1) === sep
-                            ) {
-                                to = to.substr(0, to.length - 1);
+                            if (typeof to !== 'string' && to.value) {
+                                to = to.value;
+                                if (
+                                    to.substr(-1) === '/' ||
+                                    to.substr(-1) === sep
+                                ) {
+                                    to = to.substr(0, to.length - 1);
+                                }
                             }
 
                             args = args.map((arg) => {
@@ -607,9 +615,9 @@ class DockerFile {
             contents += `RUN --mount=type=cache,id=npm,target=~/.npm \\\n`;
         } else if (packageManager === 'yarn') {
             if (yarnVersion < 2) {
-                contents += `RUN --mount=type=cache,id=npm,target=~/.cache/yarn/v6 \\\n`;
+                contents += `RUN --mount=type=cache,sharing=locked,target=/usr/local/share/.cache/yarn \\\n`;
             } else {
-                contents += `RUN --mount=type=cache,target=${dir}/.yarn/cache \\\n`;
+                contents += `RUN --mount=type=cache,sharing=locked,target=${dir}/.yarn/cache \\\n`;
             }
         }
 

@@ -207,7 +207,6 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
 
                 args = args || {};
 
-                target = target || 'default';
 
                 let df = DockerFile.getInstance(
                     dockerfile,
@@ -219,6 +218,14 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
 
                 service.dockerfile = df.path;
                 service.dockerfileTime = files.fileTime(df.path);
+
+                let stagesNames = Object.keys(df.stages);
+
+                if (stagesNames.length === 0) {
+                    stagesNames = ['default'];
+                }
+
+                target = target || stagesNames[stagesNames.length - 1];
 
                 const stage = df.stages[target];
 
