@@ -422,8 +422,6 @@ const checkBuild = async opts => {
 
 
     if (diffServices.length) {
-        console.log("DIFF SERVICES", diffServices);
-
         opts.buildCmd += `${diffServices.join(' ')}`;
     } else {
         opts.buildCmd = null;
