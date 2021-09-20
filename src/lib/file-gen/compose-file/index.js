@@ -238,6 +238,10 @@ class ComposeFile extends aggregation(ComposeStatic, ComposeParseHelpers) {
 
                 working_dir = working_dir || stage.workingDir;
 
+                if (!working_dir) {
+                    throw new Error(`Stage '${target}' in Dockerfile does specify WORKDIR`);
+                }
+
                 df.containerFS = df.containerFS || [];
 
                 const wdLen = working_dir.length;
