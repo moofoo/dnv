@@ -378,19 +378,21 @@ const checkBuild = async opts => {
     let output;
     let allImagesOk = true;
 
-    for (const [name] of Object.entries(services)) {
-        output = await execa.command(`docker image inspect ${projectName}_${name}`, {
-            cwd: files.cwd,
-            stdio: 'pipe',
-        });
+    for (const [name, service] of Object.entries(services)) {
+        if (service.isNode) {
+            output = await execa.command(`docker image inspect ${projectName}_${name}`, {
+                cwd: files.cwd,
+                stdio: 'pipe',
+            });
 
-        const stdout =
-            ((output.stdout && stripAnsi(output.stdout).trim()) || '') + ' ' +
-            ((output.stderr && stripAnsi(output.stderr).trim()) || '');
+            const stdout =
+                ((output.stdout && stripAnsi(output.stdout).trim()) || '') + ' ' +
+                ((output.stderr && stripAnsi(output.stderr).trim()) || '');
 
-        if (stdout.includes('Error: No such image')) {
-            allImagesOk = false;
-            break;
+            if (stdout.includes('Error: No such image')) {
+                allImagesOk = false;
+                break;
+            }
         }
     }
 
