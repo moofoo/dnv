@@ -20,6 +20,10 @@ module.exports = async (action) => {
             'Do not synchronize docker-compose.yml and project configuration and do not re-generate docker-compose-dnv.gen.yml'
         )
         .option(
+            '--nobuild',
+            'Do not rebuild images if lock file changed'
+        )
+        .option(
             '-i --install',
             're-generate docker-compose-dnv-gen.yml (if needed) and force run npm/yarn install in container'
         )

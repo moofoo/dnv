@@ -405,6 +405,10 @@ const checkBuild = async opts => {
         opts.newBuild = false;
     }
 
+    if (opts.nobuild) {
+        return opts;
+    }
+
     const diffServices = [];
 
     for (const [name, service] of Object.entries(services)) {
